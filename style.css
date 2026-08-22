@@ -1,0 +1,96 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f5f6f8;
+  color: #18212f;
+}
+
+.app {
+  max-width: 900px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.topbar {
+  padding: 24px 20px;
+  background: #101827;
+  color: white;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.topbar p {
+  margin: 6px 0 0;
+  color: #c7ced9;
+}
+
+.section {
+  padding: 24px 18px 40px;
+}
+
+.section-head h2 {
+  margin: 0 0 6px;
+  font-size: 26px;
+}
+
+.section-head p {
+  margin: 0 0 22px;
+  color: #6f7784;
+}
+
+.item-card {
+  background: white;
+  border: 1px solid #e1e5ea;
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.item-card h3 {
+  margin: 0 0 16px;
+  font-size: 20px;
+}
+
+.field {
+  margin-bottom: 14px;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cfd5dd;
+  border-radius: 10px;
+  font-size: 16px;
+  background: white;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  .two-column {
+    grid-template-columns: 1fr;
+  }
+}
