@@ -79,3 +79,58 @@ function createItemCard() {
 }
 
 createItemCard();
+
+const stockSetupForm = document.getElementById("stock-setup-form");
+
+let inventory = JSON.parse(localStorage.getItem("brightPathInventory")) || [];
+
+stockSetupForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const cards = document.querySelectorAll(".item-card");
+  const newInventory = [];
+
+  cards.forEach((card) => {
+    const name = card.querySelector(".item-name").value.trim();
+    const quantityValue = card.querySelector(".item-quantity").value;
+    const unit = card.querySelector(".item-unit").value.trim();
+    const location = card.querySelector(".item-location").value.trim();
+    const notes = card.querySelector(".item-notes").value.trim();
+
+    if (!name) {
+      return;
+    }
+
+    const quantity = Number(quantityValue);
+
+    if (!Number.isFinite(quantity) || quantity < 0) {
+      return;
+    }
+
+    newInventory.push({
+      id: Date.now() + Math.random(),
+      name: name,
+      quantity: quantity,
+      unit: unit,
+      location: location,
+      notes: notes,
+      totalReceived: quantity,
+      totalIssued: 0,
+      createdAt: new Date().toISOString()
+    });
+  });
+
+  if (newInventory.length === 0) {
+    alert("Enter at least one stock item before saving.");
+    return;
+  }
+
+  inventory = newInventory;
+
+  localStorage.setItem(
+    "brightPathInventory",
+    JSON.stringify(inventory)
+  );
+
+  alert(`${inventory.length} stock item(s) saved successfully.`);
+});
