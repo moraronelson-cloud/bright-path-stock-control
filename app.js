@@ -131,6 +131,58 @@ stockSetupForm.addEventListener("submit", (event) => {
     "brightPathInventory",
     JSON.stringify(inventory)
   );
+  renderInventory();
 
   alert(`${inventory.length} stock item(s) saved successfully.`);
 });
+function renderInventory() {
+  const inventoryList = document.getElementById("inventory-list");
+
+  if (!inventoryList) {
+    return;
+  }
+
+  inventoryList.innerHTML = "";
+
+  if (inventory.length === 0) {
+    inventoryList.innerHTML = `
+      <div class="item-card">
+        <p>No stock has been recorded yet.</p>
+      </div>
+    `;
+    return;
+  }
+
+  inventory.forEach((item) => {
+    const card = document.createElement("div");
+    card.className = "item-card";
+
+    card.innerHTML = `
+      <h3>${item.name}</h3>
+
+      <p>
+        <strong>Stock Remaining:</strong>
+        ${item.quantity} ${item.unit || ""}
+      </p>
+
+      <p>
+        <strong>Location:</strong>
+        ${item.location || "Not specified"}
+      </p>
+
+      <p>
+        <strong>Total Received:</strong>
+        ${item.totalReceived} ${item.unit || ""}
+      </p>
+
+      <p>
+        <strong>Total Issued:</strong>
+        ${item.totalIssued} ${item.unit || ""}
+      </p>
+    `;
+
+    inventoryList.appendChild(card);
+  });
+}
+
+renderInventory();
