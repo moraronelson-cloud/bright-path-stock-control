@@ -1,0 +1,1 @@
+# bright-path-stock-control
