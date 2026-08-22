@@ -1,51 +1,115 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bright Path Stock Control</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>Bright Path Stock Control</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#172033}
+header{background:#101827;color:#fff;padding:18px 16px;position:sticky;top:0;z-index:10}
+header h1{margin:0;font-size:22px}header small{color:#c9d0da}
+.wrap{max-width:980px;margin:auto;padding:14px}
+.card{background:#fff;border:1px solid #dfe4ea;border-radius:14px;padding:16px;margin:12px 0}
+h2,h3{margin-top:0}.muted{color:#6b7280}.hidden{display:none!important}
+nav{display:flex;gap:8px;overflow:auto;padding:10px 0;position:sticky;top:70px;background:#f4f6f8;z-index:9}
+nav button{white-space:nowrap;width:auto;padding:9px 12px;margin:0}
+button{border:0;border-radius:10px;padding:11px 14px;background:#101827;color:#fff;font-weight:700;font-size:15px}
+button.secondary{background:#e8edf3;color:#172033}
+input,select,textarea{width:100%;padding:11px;border:1px solid #cdd4de;border-radius:9px;font-size:16px;background:#fff}
+label{display:block;font-weight:700;margin:10px 0 5px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:680px){.grid{grid-template-columns:1fr}}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{background:#fff;border:1px solid #dfe4ea;border-radius:12px;padding:14px}.stat b{display:block;font-size:24px}
+@media(max-width:680px){.stats{grid-template-columns:1fr 1fr}}
+.row{display:flex;gap:8px;align-items:center;justify-content:space-between}.row>*{min-width:0}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:9px 7px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top}
+.scroll{overflow:auto}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef2f6;font-size:12px}.low{background:#fee2e2}.ok{background:#dcfce7}
+.toast{position:fixed;left:12px;right:12px;bottom:18px;max-width:600px;margin:auto;background:#111827;color:#fff;padding:12px 14px;border-radius:10px;display:none;z-index:99}
+.item-entry{border:1px dashed #cbd5e1;border-radius:12px;padding:12px;margin:10px 0}
+.authbox{max-width:420px;margin:40px auto}
+</style>
 </head>
-
 <body>
-  <div class="app">
-
-    <header class="topbar">
-      <h1>BRIGHT PATH</h1>
-      <p>Stock Control</p>
-    </header>
-
-    <main>
-      <section class="section">
-        <div class="section-head">
-          <div>
-            <h2>Stock Setup</h2>
-            <p>Add items as you count them. A new item will appear automatically.</p>
-          </div>
-        </div>
-
-        <form id="stock-setup-form">
-  <div id="items-container"></div>
-
-  <button type="submit" id="save-inventory">
-    Save Inventory
-  </button>
-</form>
-      </section>
-      <section class="section">
-  <div class="section-head">
-    <div>
-      <h2>Current Stock</h2>
-      <p>Saved inventory and current quantities.</p>
-    </div>
-  </div>
-
-  <div id="inventory-list"></div>
+<header><h1>BRIGHT PATH</h1><small>Shared Stock Control</small></header>
+<div class="wrap">
+<section id="auth" class="authbox card">
+<h2>Sign in</h2><p class="muted">Use the same system from any device. Your boss can sign in separately and see the same live stock.</p>
+<label>Email</label><input id="email" type="email" autocomplete="email">
+<label>Password</label><input id="password" type="password" autocomplete="current-password">
+<div class="grid" style="margin-top:12px"><button id="signin">Sign in</button><button id="signup" class="secondary">Create account</button></div>
+<p id="authmsg" class="muted"></p>
 </section>
-    </main>
-
-  </div>
-
-  <script src="app.js"></script>
-</body>
-</html>
+<section id="app" class="hidden">
+<div class="row card"><div><b id="who"></b><div class="muted" id="sync">Connecting…</div></div><button id="signout" class="secondary">Sign out</button></div>
+<nav>
+<button data-tab="dash">Dashboard</button><button data-tab="add">Add Items</button><button data-tab="receive">Receive</button><button data-tab="issue">Issue</button><button data-tab="count">Count</button><button data-tab="inventory">Inventory</button><button data-tab="history">History</button><button data-tab="sites">Sites</button>
+</nav>
+<div id="dash" class="tab">
+<div class="stats"><div class="stat"><span>Items</span><b id="sItems">0</b></div><div class="stat"><span>Low stock</span><b id="sLow">0</b></div><div class="stat"><span>Issued today</span><b id="sIssued">0</b></div><div class="stat"><span>Transactions</span><b id="sTx">0</b></div></div>
+<div class="grid"><div class="card"><h3>Most used items</h3><div id="usage"></div></div><div class="card"><h3>Needs attention</h3><div id="attention"></div></div></div>
+</div>
+<div id="add" class="tab hidden"><div class="card"><h2>Add Stock Items</h2><p class="muted">Enter items as you count them. A new blank item appears automatically.</p><form id="itemForm"><div id="itemRows"></div><button type="submit">Save New Items</button></form></div></div>
+<div id="receive" class="tab hidden"><div class="card"><h2>Receive Stock</h2><form id="receiveForm">
+<label>Item</label><select id="rItem" required></select><div class="grid"><div><label>Quantity received</label><input id="rQty" type="number" step="0.01" min="0.01" required></div><div><label>Site</label><select id="rSite" required></select></div></div>
+<div class="grid"><div><label>Received by</label><input id="rBy" required></div><div><label>Delivered by / source</label><input id="rSource"></div></div><label>Reference</label><input id="rRef"><label>Notes</label><textarea id="rNotes" rows="2"></textarea><button type="submit">Save Receipt</button></form></div></div>
+<div id="issue" class="tab hidden"><div class="card"><h2>Issue Stock</h2><form id="issueForm">
+<label>Item</label><select id="iItem" required></select><div class="grid"><div><label>Quantity issued</label><input id="iQty" type="number" step="0.01" min="0.01" required></div><div><label>Site</label><select id="iSite" required></select></div></div>
+<div class="grid"><div><label>Issued by</label><input id="iBy" required></div><div><label>Taken / received by</label><input id="iTaken" required></div></div><label>Used for / machine / department</label><input id="iPurpose"><label>Notes</label><textarea id="iNotes" rows="2"></textarea><button type="submit">Save Issue</button></form></div></div>
+<div id="count" class="tab hidden"><div class="card"><h2>Physical Stock Count</h2><form id="countForm">
+<label>Item</label><select id="cItem" required></select><div class="grid"><div><label>Physical quantity</label><input id="cQty" type="number" step="0.01" min="0" required></div><div><label>Site</label><select id="cSite" required></select></div></div>
+<label>Counted by</label><input id="cBy" required><label>Notes</label><textarea id="cNotes" rows="2"></textarea><p id="cPreview" class="muted">Select an item to compare expected stock.</p><button type="submit">Save Count</button></form></div></div>
+<div id="inventory" class="tab hidden"><div class="card"><div class="row"><div><h2>Current Inventory</h2><p class="muted">Expected balance = opening + received − issued.</p></div><input id="search" style="max-width:300px" placeholder="Search…"></div>
+<div class="scroll"><table><thead><tr><th>Item</th><th>Site</th><th>Remaining</th><th>Received</th><th>Issued</th><th>Physical</th><th>Status</th></tr></thead><tbody id="invBody"></tbody></table></div></div></div>
+<div id="history" class="tab hidden"><div class="card"><div class="row"><h2>Transaction History</h2><select id="hFilter" style="max-width:220px"><option value="all">All</option><option value="receive">Received</option><option value="issue">Issued</option></select></div><div id="historyList"></div></div></div>
+<div id="sites" class="tab hidden"><div class="card"><h2>Sites</h2><form id="siteForm"><div class="grid"><input id="siteName" placeholder="Site name" required><input id="siteCode" placeholder="Code e.g. BL3"></div><button type="submit">Add Site</button></form><div id="siteList"></div></div></div>
+</section></div><div id="toast" class="toast"></div>
+<script>
+const URL='https://psqirjistwghakjnymtw.supabase.co';
+const KEY='sb_publishable__QvK-7cNWqUsfDkAOJiYGQ_O4Ub_vj0';
+const sb=supabase.createClient(URL,KEY);
+let state={sites:[],items:[],balances:[],movements:[],counts:[],usage:[]};
+const $=id=>document.getElementById(id);
+const toast=m=>{const t=$('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2400)};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function showTab(id){document.querySelectorAll('.tab').forEach(x=>x.classList.add('hidden'));$(id).classList.remove('hidden')}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+async function authState(){const {data:{session}}=await sb.auth.getSession();$('auth').classList.toggle('hidden',!!session);$('app').classList.toggle('hidden',!session);if(session){$('who').textContent=session.user.email;await loadAll();subscribe();resetItemRows();}}
+$('signin').onclick=async()=>{const {error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});$('authmsg').textContent=error?error.message:'Signed in';if(!error)authState()};
+$('signup').onclick=async()=>{const {data,error}=await sb.auth.signUp({email:$('email').value.trim(),password:$('password').value});$('authmsg').textContent=error?error.message:(data.session?'Account created and signed in':'Account created. Check your email if confirmation is required.');if(data.session)authState()};
+$('signout').onclick=async()=>{await sb.auth.signOut();location.reload()};
+function fillSelect(id,rows,placeholder='Select'){const e=$(id);e.innerHTML='<option value="">'+placeholder+'</option>'+rows.map(x=>'<option value="'+x.id+'">'+esc(x.name)+'</option>').join('')}
+async function loadAll(){
+ $('sync').textContent='Syncing…';
+ const [sites,items,balances,movs,counts,usage]=await Promise.all([
+ sb.from('sites').select('*').eq('active',true).order('name'),
+ sb.from('items').select('*').eq('active',true).order('name'),
+ sb.from('inventory_balances').select('*').order('name'),
+ sb.from('stock_movements').select('*').order('occurred_at',{ascending:false}).limit(500),
+ sb.from('physical_counts').select('*').order('counted_at',{ascending:false}).limit(200),
+ sb.from('item_usage_rankings').select('*').order('total_issued',{ascending:false}).limit(20)]);
+ for(const r of [sites,items,balances,movs,counts,usage]) if(r.error){console.error(r.error);toast(r.error.message)}
+ state={sites:sites.data||[],items:items.data||[],balances:balances.data||[],movements:movs.data||[],counts:counts.data||[],usage:usage.data||[]};renderAll();$('sync').textContent='Live • '+new Date().toLocaleTimeString();
+}
+function subscribe(){if(window._ch)return;window._ch=sb.channel('stock-live').on('postgres_changes',{event:'*',schema:'public',table:'items'},loadAll).on('postgres_changes',{event:'*',schema:'public',table:'stock_movements'},loadAll).on('postgres_changes',{event:'*',schema:'public',table:'physical_counts'},loadAll).on('postgres_changes',{event:'*',schema:'public',table:'sites'},loadAll).subscribe();}
+function renderAll(){fillSelect('rItem',state.items,'Select item');fillSelect('iItem',state.items,'Select item');fillSelect('cItem',state.items,'Select item');['rSite','iSite','cSite'].forEach(id=>fillSelect(id,state.sites,'Select site'));
+$('sItems').textContent=state.items.length;$('sLow').textContent=state.balances.filter(x=>x.low_stock).length;$('sTx').textContent=state.movements.length;const today=new Date().toISOString().slice(0,10);$('sIssued').textContent=state.movements.filter(x=>x.movement_type==='issue'&&x.occurred_at.slice(0,10)===today).reduce((a,b)=>a+Number(b.quantity),0);
+$('usage').innerHTML=state.usage.length?state.usage.slice(0,8).map((x,i)=>'<div class="row"><span>'+(i+1)+'. '+esc(x.name)+'</span><b>'+Number(x.total_issued)+' '+esc(x.unit)+'</b></div>').join(''):'<p class="muted">No issues recorded yet.</p>';
+const lows=state.balances.filter(x=>x.low_stock);$('attention').innerHTML=lows.length?lows.map(x=>'<div class="row"><span>'+esc(x.name)+' — '+esc(x.site_name)+'</span><span class="pill low">'+Number(x.expected_quantity)+' '+esc(x.unit)+'</span></div>').join(''):'<p class="muted">Nothing needs attention.</p>';renderInventory();renderHistory();$('siteList').innerHTML=state.sites.map(s=>'<p><b>'+esc(s.name)+'</b> <span class="muted">'+esc(s.code||'')+'</span></p>').join('');}
+function renderInventory(){const q=($('search').value||'').toLowerCase();const rows=state.balances.filter(x=>[x.name,x.site_name,x.storage_location].join(' ').toLowerCase().includes(q));$('invBody').innerHTML=rows.map(x=>'<tr><td><b>'+esc(x.name)+'</b><br><span class="muted">'+esc(x.storage_location||'')+'</span></td><td>'+esc(x.site_name)+'</td><td><b>'+Number(x.expected_quantity)+' '+esc(x.unit)+'</b></td><td>'+Number(x.total_received)+'</td><td>'+Number(x.total_issued)+'</td><td>'+(x.physical_quantity==null?'—':Number(x.physical_quantity)+' <span class="muted">(var '+Number(x.variance)+')</span>')+'</td><td><span class="pill '+(x.low_stock?'low':'ok')+'">'+(x.low_stock?'LOW':'OK')+'</span></td></tr>').join('')}
+$('search').oninput=renderInventory;
+function itemName(id){return state.items.find(x=>x.id===id)?.name||'Unknown item'}function siteName(id){return state.sites.find(x=>x.id===id)?.name||'Unknown site'}
+function renderHistory(){const f=$('hFilter').value;const rows=state.movements.filter(x=>f==='all'||x.movement_type===f);$('historyList').innerHTML=rows.length?rows.map(x=>'<div class="card"><div class="row"><b>'+esc(itemName(x.item_id))+'</b><span class="pill">'+esc(x.movement_type.toUpperCase())+'</span></div><div>'+Number(x.quantity)+' • '+esc(siteName(x.site_id))+'</div><div class="muted">'+new Date(x.occurred_at).toLocaleString()+'</div><div class="muted">'+esc(x.received_by||x.taken_by||x.issued_by||'')+(x.purpose?' • '+esc(x.purpose):'')+'</div></div>').join(''):'<p class="muted">No transactions yet.</p>'}
+$('hFilter').onchange=renderHistory;
+let itemNo=0;
+function addItemRow(){itemNo++;const d=document.createElement('div');d.className='item-entry';d.innerHTML='<h3>Item '+itemNo+'</h3><label>Item name</label><input class="n" required><div class="grid"><div><label>Opening quantity</label><input class="q" type="number" step="0.01" min="0" value="0"></div><div><label>Unit</label><input class="u" placeholder="pieces, litres, kg..." required></div></div><div class="grid"><div><label>Site</label><select class="s" required><option value="">Select site</option>'+state.sites.map(x=>'<option value="'+x.id+'">'+esc(x.name)+'</option>').join('')+'</select></div><div><label>Stock location</label><input class="l" placeholder="Store / shelf / area"></div></div><label>Minimum stock level</label><input class="m" type="number" step="0.01" min="0" value="0"><label>Notes</label><textarea class="o" rows="2"></textarea><label>Item photo (optional)</label><input class="p" type="file" accept="image/*">';$('itemRows').appendChild(d);const n=d.querySelector('.n');n.addEventListener('input',()=>{const all=[...document.querySelectorAll('.item-entry')];if(all[all.length-1]===d&&n.value.trim())addItemRow()})}
+function resetItemRows(){itemNo=0;$('itemRows').innerHTML='';addItemRow()}
+async function uploadPhoto(file){if(!file)return null;const path='items/'+crypto.randomUUID()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');const {error}=await sb.storage.from('stock-photos').upload(path,file,{upsert:false});if(error)throw error;return path}
+$('itemForm').onsubmit=async e=>{e.preventDefault();const rows=[...document.querySelectorAll('.item-entry')].filter(d=>d.querySelector('.n').value.trim());try{for(const d of rows){const photo=await uploadPhoto(d.querySelector('.p').files[0]);const rec={name:d.querySelector('.n').value.trim(),opening_quantity:Number(d.querySelector('.q').value||0),unit:d.querySelector('.u').value.trim(),default_site_id:d.querySelector('.s').value,storage_location:d.querySelector('.l').value.trim()||null,minimum_level:Number(d.querySelector('.m').value||0),notes:d.querySelector('.o').value.trim()||null,photo_url:photo};const {error}=await sb.from('items').insert(rec);if(error)throw error}toast('Items saved');resetItemRows();await loadAll()}catch(err){toast(err.message)}};
+$('receiveForm').onsubmit=async e=>{e.preventDefault();const rec={item_id:$('rItem').value,site_id:$('rSite').value,movement_type:'receive',quantity:Number($('rQty').value),received_by:$('rBy').value.trim(),source:$('rSource').value.trim()||null,reference:$('rRef').value.trim()||null,notes:$('rNotes').value.trim()||null};const {error}=await sb.from('stock_movements').insert(rec);if(error)return toast(error.message);e.target.reset();toast('Receipt saved');await loadAll()};
+$('issueForm').onsubmit=async e=>{e.preventDefault();const qty=Number($('iQty').value),bal=state.balances.find(x=>x.item_id===$('iItem').value&&x.site_id===$('iSite').value);if(bal&&qty>Number(bal.expected_quantity))return toast('Cannot issue more than stock remaining');const rec={item_id:$('iItem').value,site_id:$('iSite').value,movement_type:'issue',quantity:qty,issued_by:$('iBy').value.trim(),taken_by:$('iTaken').value.trim(),purpose:$('iPurpose').value.trim()||null,notes:$('iNotes').value.trim()||null};const {error}=await sb.from('stock_movements').insert(rec);if(error)return toast(error.message);e.target.reset();toast('Issue saved');await loadAll()};
+$('cItem').onchange=$('cSite').onchange=()=>{const b=state.balances.find(x=>x.item_id===$('cItem').value&&x.site_id===$('cSite').value);$('cPreview').textContent=b?'Expected stock: '+Number(b.expected_quantity)+' '+b.unit:'No balance found for this item/site yet.'};
+$('countForm').onsubmit=async e=>{e.preventDefault();const rec={item_id:$('cItem').value,site_id:$('cSite').value,physical_quantity:Number($('cQty').value),counted_by:$('cBy').value.trim(),notes:$('cNotes').value.trim()||null};const {error}=await sb.from('physical_counts').insert(rec);if(error)return toast(error.message);e.target.reset();toast('Physical count saved');await loadAll()};
+$('siteForm').onsubmit=async e=>{e.preventDefault();const {error}=await sb.from('sites').insert({name:$('siteName').value.trim(),code:$('siteCode').value.trim()||null});if(error)return toast(error.message);e.target.reset();toast('Site added');await loadAll();resetItemRows()};
+sb.auth.onAuthStateChange(()=>authState());authState();
+</script></body></html>
