@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#101827">
 <title>Bright Path Stock Control</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#172033}
 header{background:#101827;color:#fff;padding:18px 16px;position:sticky;top:0;z-index:10}
@@ -65,9 +65,43 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:9px 7px;b
 <div id="sites" class="tab hidden"><div class="card"><h2>Sites</h2><form id="siteForm"><div class="grid"><input id="siteName" placeholder="Site name" required><input id="siteCode" placeholder="Code e.g. BL3"></div><button type="submit">Add Site</button></form><div id="siteList"></div></div></div>
 </section></div><div id="toast" class="toast"></div>
 <script>
+(function(){
+  const status = document.createElement('div');
+  status.id='bootStatus';
+  status.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;padding:10px 12px;border-radius:10px;background:#fff3cd;color:#664d03;border:1px solid #ffecb5;font:14px Arial';
+  status.textContent='Starting secure connection…';
+  document.addEventListener('DOMContentLoaded',()=>document.body.appendChild(status));
+  const sources=[
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
+    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js'
+  ];
+  let i=0;
+  function load(){
+    if(i>=sources.length){
+      window.__supabaseLoadError=true;
+      status.textContent='Connection library could not load. Check internet access and refresh.';
+      status.style.background='#fee2e2'; status.style.color='#991b1b';
+      return;
+    }
+    const s=document.createElement('script'); s.src=sources[i++]; s.async=false;
+    s.onload=()=>{status.textContent='Connection library loaded ✓'; window.dispatchEvent(new Event('supabase-ready'));};
+    s.onerror=load; document.head.appendChild(s);
+  }
+  load();
+})();
+</script>
+<script>
 const URL='https://psqirjistwghakjnymtw.supabase.co';
 const KEY='sb_publishable__QvK-7cNWqUsfDkAOJiYGQ_O4Ub_vj0';
-const sb=supabase.createClient(URL,KEY);
+let sb=null;
+function initSupabase(){
+  if(sb) return true;
+  if(!window.supabase || !window.supabase.createClient) return false;
+  sb=window.supabase.createClient(URL,KEY);
+  const s=document.getElementById('bootStatus');
+  if(s){s.textContent='Connected to Supabase ✓';s.style.background='#dcfce7';s.style.color='#166534';setTimeout(()=>s.remove(),1800);}
+  return true;
+}
 let state={sites:[],items:[],balances:[],movements:[],counts:[],usage:[]};
 const $=id=>document.getElementById(id);
 const toast=m=>{const t=$('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2400)};
@@ -111,5 +145,14 @@ $('issueForm').onsubmit=async e=>{e.preventDefault();const qty=Number($('iQty').
 $('cItem').onchange=$('cSite').onchange=()=>{const b=state.balances.find(x=>x.item_id===$('cItem').value&&x.site_id===$('cSite').value);$('cPreview').textContent=b?'Expected stock: '+Number(b.expected_quantity)+' '+b.unit:'No balance found for this item/site yet.'};
 $('countForm').onsubmit=async e=>{e.preventDefault();const rec={item_id:$('cItem').value,site_id:$('cSite').value,physical_quantity:Number($('cQty').value),counted_by:$('cBy').value.trim(),notes:$('cNotes').value.trim()||null};const {error}=await sb.from('physical_counts').insert(rec);if(error)return toast(error.message);e.target.reset();toast('Physical count saved');await loadAll()};
 $('siteForm').onsubmit=async e=>{e.preventDefault();const {error}=await sb.from('sites').insert({name:$('siteName').value.trim(),code:$('siteCode').value.trim()||null});if(error)return toast(error.message);e.target.reset();toast('Site added');await loadAll();resetItemRows()};
-sb.auth.onAuthStateChange(()=>authState());authState();
+async function boot(){
+  if(!initSupabase()) return;
+  sb.auth.onAuthStateChange(()=>authState());
+  await authState();
+}
+if(window.supabase){boot();}else{window.addEventListener('supabase-ready',boot,{once:true});}
+window.addEventListener('error',e=>{
+  const m=document.getElementById('authmsg');
+  if(m) m.textContent='App error: '+e.message;
+});
 </script></body></html>
