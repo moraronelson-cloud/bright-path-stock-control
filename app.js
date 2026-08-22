@@ -1,3 +1,4 @@
+alert("JavaScript loaded");
 const itemsContainer = document.getElementById("items-container");
 
 let itemCount = 0;
