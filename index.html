@@ -150,7 +150,18 @@ async function boot(){
   sb.auth.onAuthStateChange(()=>authState());
   await authState();
 }
-if(window.supabase){boot();}else{window.addEventListener('supabase-ready',boot,{once:true});}
+if(window.supabase){
+  boot();
+}else{
+  window.addEventListener('supabase-ready',boot,{once:true});
+  const bootPoll=setInterval(()=>{
+    if(window.supabase){
+      clearInterval(bootPoll);
+      boot();
+    }
+  },100);
+  setTimeout(()=>clearInterval(bootPoll),15000);
+}
 window.addEventListener('error',e=>{
   const m=document.getElementById('authmsg');
   if(m) m.textContent='App error: '+e.message;
