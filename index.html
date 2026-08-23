@@ -348,8 +348,11 @@ function renderCatalogueList(){
     '<div class="card"><div class="row"><div><b>'+esc(itemPrimary(it))+'</b>'+
     (itemAlt(it)?'<div class="alt">'+esc(itemAlt(it))+'</div>':"")+
     (it.item_code?'<div class="alt">Code: '+esc(it.item_code)+'</div>':"")+
-    '</div><button type="button" class="dangerBtn smallBtn" onclick="archiveItem(\\''+it.id+'\\')">Archive</button></div></div>'
+    '</div><button type="button" class="dangerBtn smallBtn archiveItemBtn" data-item-id="'+esc(it.id)+'">Archive</button></div></div>'
   ).join("")||'<p class="muted">No items yet.</p>';
+  document.querySelectorAll(".archiveItemBtn").forEach(btn=>{
+    btn.addEventListener("click",()=>archiveItem(btn.dataset.itemId));
+  });
 }
 async function archiveItem(id){
   const it=state.items.find(x=>x.id===id); if(!it)return;
