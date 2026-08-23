@@ -47,7 +47,7 @@ details{margin-top:8px}summary{font-weight:700;cursor:pointer}h2,h3{margin-top:0
 <section id="appBox" class="hidden">
   <div class="card toolbar">
     <div class="who">
-      <b id="loggedInAs"></b>
+      <b id="loggedInAs"></b> <span id="roleBadge" class="pill"></span>
       <div id="syncStatus" class="small muted">Loading…</div>
     </div>
     <div>
@@ -69,13 +69,16 @@ details{margin-top:8px}summary{font-weight:700;cursor:pointer}h2,h3{margin-top:0
   <div class="tabs">
     <button type="button" data-tab="dashboard" data-i18n="dashboard">Dashboard</button>
     <button type="button" data-tab="inventory" data-i18n="inventory">Inventory</button>
-    <button type="button" data-tab="receive" data-i18n="receive">Receive</button>
-    <button type="button" data-tab="issue" data-i18n="issue">Issue</button>
-    <button type="button" data-tab="count" data-i18n="count">Count</button>
-    <button type="button" data-tab="opening" data-i18n="openingStock">Opening Stock</button>
+    <button type="button" id="receiveTabBtn" data-tab="receive" data-i18n="receive">Receive</button>
+    <button type="button" id="receivedViewTabBtn" class="hidden" data-tab="receivedView">Received</button>
+    <button type="button" id="issueTabBtn" data-tab="issue" data-i18n="issue">Issue</button>
+    <button type="button" id="issuedViewTabBtn" class="hidden" data-tab="issuedView">Issued</button>
+    <button type="button" id="countTabBtn" data-tab="count" data-i18n="count">Count</button>
+    <button type="button" id="countsViewTabBtn" class="hidden" data-tab="countsView">Counts</button>
+    <button type="button" id="openingTabBtn" data-tab="opening" data-i18n="openingStock">Opening Stock</button>
     <button type="button" data-tab="history" data-i18n="history">History</button>
-    <button type="button" data-tab="sites" data-i18n="sites">Sites</button>
-    <button type="button" data-tab="catalogue" data-i18n="catalogue">Item Catalogue</button>
+    <button type="button" id="sitesTabBtn" data-tab="sites" data-i18n="sites">Sites</button>
+    <button type="button" id="catalogueTabBtn" data-tab="catalogue" data-i18n="catalogue">Item Catalogue</button>
   </div>
 
   <section id="dashboard" class="tab">
@@ -177,6 +180,10 @@ details{margin-top:8px}summary{font-weight:700;cursor:pointer}h2,h3{margin-top:0
     </div>
   </section>
 
+  <section id="receivedView" class="tab hidden"><div class="card"><h2>Received Stock</h2><p class="muted">Read-only list of stock received for the selected site.</p><div id="receivedViewList"></div></div></section>
+  <section id="issuedView" class="tab hidden"><div class="card"><h2>Issued Stock</h2><p class="muted">Read-only list of stock issued for the selected site.</p><div id="issuedViewList"></div></div></section>
+  <section id="countsView" class="tab hidden"><div class="card"><h2>Physical Counts</h2><p class="muted">Read-only physical stock counts and variances for the selected site.</p><div id="countsViewList"></div></div></section>
+
   <section id="history" class="tab hidden"><div class="card"><div class="row"><h2 data-i18n="history">History</h2><select id="histFilter"><option value="all">All</option><option value="opening">Opening</option><option value="receive">Received</option><option value="issue">Issued</option><option value="count">Physical Count</option></select></div><div id="historyList"></div></div></section>
 
   <section id="sites" class="tab hidden">
@@ -190,6 +197,7 @@ details{margin-top:8px}summary{font-weight:700;cursor:pointer}h2,h3{margin-top:0
 const BASE="https://psqirjistwghakjnymtw.supabase.co", KEY="sb_publishable__QvK-7cNWqUsfDkAOJiYGQ_O4Ub_vj0";
 let accessToken=localStorage.getItem("bp_access")||"", refreshToken=localStorage.getItem("bp_refresh")||"", userEmail=localStorage.getItem("bp_email")||"";
 let state={sites:[],items:[],movements:[],counts:[],openings:[],balances:[]}; let pollTimer=null;
+let currentRole="viewer";
 let currentLang=localStorage.getItem("bp_lang")||"en"; let currentSite=localStorage.getItem("bp_site")||"all";
 const $=id=>document.getElementById(id);
 const T={
@@ -215,7 +223,32 @@ $("signOutBtn").onclick=()=>{clearSession();location.reload()};$("refreshBtn").o
 $("languageSelect").value=currentLang;$("languageSelect").onchange=()=>{currentLang=$("languageSelect").value;localStorage.setItem("bp_lang",currentLang);applyLanguage()};
 $("globalSiteFilter").onchange=()=>{currentSite=$("globalSiteFilter").value;localStorage.setItem("bp_site",currentSite);renderAll()};
 
-async function enterApp(){$("authBox").classList.add("hidden");$("appBox").classList.remove("hidden");$("loggedInAs").textContent=userEmail;resetItemRows();setDefaultDates();await loadAll(true);if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(()=>loadAll(false),15000);applyLanguage()}
+async function loadRole(){
+  try{
+    const rows=await rest("user_roles",{query:"select=role&user_id=eq."+encodeURIComponent((await currentUser()).id)+"&limit=1"});
+    currentRole=rows&&rows[0]?rows[0].role:"viewer";
+  }catch(e){currentRole="viewer"}
+}
+function applyRoleUI(){
+  const viewer=currentRole==="viewer", admin=currentRole==="admin";
+  $("roleBadge").textContent=currentRole.toUpperCase();
+  ["openingTabBtn","sitesTabBtn","catalogueTabBtn"].forEach(id=>$(id)?.classList.toggle("hidden",!admin));
+  ["receiveTabBtn","issueTabBtn","countTabBtn"].forEach(id=>$(id)?.classList.toggle("hidden",viewer));
+  ["receivedViewTabBtn","issuedViewTabBtn","countsViewTabBtn"].forEach(id=>$(id)?.classList.toggle("hidden",!viewer));
+  document.querySelectorAll("#historyList .smallBtn").forEach(b=>b.classList.toggle("hidden",!admin));
+}
+function renderViewerLists(){
+  if(!$("receivedViewList"))return;
+  const movs=filteredMovements();
+  const rec=movs.filter(m=>m.movement_type==="receive").sort((a,b)=>new Date(b.occurred_at)-new Date(a.occurred_at));
+  const iss=movs.filter(m=>m.movement_type==="issue").sort((a,b)=>new Date(b.occurred_at)-new Date(a.occurred_at));
+  $("receivedViewList").innerHTML=rec.map(m=>'<div class="card"><div class="row"><b>'+esc(itemName(m.item_id))+'</b><span class="pill good">RECEIVED</span></div><div><b>'+fmt(m.quantity)+'</b> • '+esc(siteName(m.site_id))+'</div><div class="small muted">'+new Date(m.occurred_at).toLocaleString()+'</div><div class="small">'+(m.received_by?'Received by: '+esc(m.received_by):'')+(m.source?' • Source: '+esc(m.source):'')+(m.reference?' • Ref: '+esc(m.reference):'')+'</div>'+(m.notes?'<div class="small muted">'+esc(m.notes)+'</div>':'')+'</div>').join("")||'<p class="muted">No received stock records.</p>';
+  $("issuedViewList").innerHTML=iss.map(m=>'<div class="card"><div class="row"><b>'+esc(itemName(m.item_id))+'</b><span class="pill">ISSUED</span></div><div><b>'+fmt(m.quantity)+'</b> • '+esc(siteName(m.site_id))+'</div><div class="small muted">'+new Date(m.occurred_at).toLocaleString()+'</div><div class="small">'+(m.issued_by?'Issued by: '+esc(m.issued_by):'')+(m.taken_by?' • Taken by: '+esc(m.taken_by):'')+(m.purpose?' • Purpose: '+esc(m.purpose):'')+'</div>'+(m.notes?'<div class="small muted">'+esc(m.notes)+'</div>':'')+'</div>').join("")||'<p class="muted">No issued stock records.</p>';
+  const bals=filteredBalances();
+  const cs=state.counts.filter(c=>currentSite==="all"||c.site_id===currentSite).sort((a,b)=>new Date(b.counted_at)-new Date(a.counted_at));
+  $("countsViewList").innerHTML=cs.map(c=>{const b=bals.find(x=>x.item_id===c.item_id&&x.site_id===c.site_id);return '<div class="card"><div class="row"><b>'+esc(itemName(c.item_id))+'</b><span class="pill">COUNT</span></div><div>Physical: <b>'+fmt(c.physical_quantity)+'</b> • '+esc(siteName(c.site_id))+'</div><div class="small muted">'+new Date(c.counted_at).toLocaleString()+'</div>'+(b?'<div class="small">Current expected: '+fmt(b.expected)+(b.variance!==null?' • Latest variance: '+fmt(b.variance):'')+'</div>':'')+(c.counted_by?'<div class="small">Counted by: '+esc(c.counted_by)+'</div>':'')+'</div>'}).join("")||'<p class="muted">No physical counts.</p>';
+}
+async function enterApp(){$("authBox").classList.add("hidden");$("appBox").classList.remove("hidden");$("loggedInAs").textContent=userEmail;resetItemRows();setDefaultDates();await loadRole();await loadAll(true);applyRoleUI();if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(()=>loadAll(false),15000);applyLanguage()}
 async function boot(){if(accessToken){let u=await currentUser();if(!u&&await refreshSession())u=await currentUser();if(u){userEmail=u.email||userEmail;await enterApp();return}clearSession()}$("authBox").classList.remove("hidden");applyLanguage()}
 function setDefaultDates(){const now=new Date(),off=now.getTimezoneOffset(),local=new Date(now.getTime()-off*60000).toISOString().slice(0,16);["rDate","iDate","cDate"].forEach(id=>$(id).value=local);$("oDate").value=now.toISOString().slice(0,10)}
 
@@ -244,7 +277,7 @@ $("siteList").innerHTML=state.sites.map(s=>'<p><b>'+esc(s.name)+'</b> <span clas
 const bals=filteredBalances(),movs=filteredMovements();$("stItems").textContent=new Set(bals.map(b=>b.item_id)).size;$("stLow").textContent=bals.filter(b=>b.low).length;const today=new Date().toISOString().slice(0,10);$("stIssued").textContent=movs.filter(m=>m.movement_type==="issue"&&m.occurred_at.slice(0,10)===today).reduce((a,m)=>a+Number(m.quantity),0);$("stTx").textContent=movs.length;
 const usage={};movs.filter(m=>m.movement_type==="issue").forEach(m=>usage[m.item_id]=(usage[m.item_id]||0)+Number(m.quantity));$("mostUsed").innerHTML=Object.entries(usage).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([id,q],i)=>'<div class="row"><span>'+(i+1)+'. '+esc(itemName(id))+'</span><b>'+fmt(q)+'</b></div>').join("")||'<p class="muted">—</p>';
 $("attention").innerHTML=bals.filter(b=>b.low).slice(0,12).map(b=>'<div class="row"><span>'+esc(itemPrimary(b.item))+' • '+esc(siteName(b.site_id))+'</span><span class="pill low">'+fmt(b.expected)+' '+esc(b.item.unit)+'</span></div>').join("")||'<p class="muted">—</p>';
-renderInventory();renderHistory();renderCatalogueList();updateIssueBalance();updateCountExpected()}
+renderInventory();renderHistory();renderCatalogueList();renderViewerLists();applyRoleUI();updateIssueBalance();updateCountExpected()}
 function renderInventory(){const q=($("invSearch").value||"").toLowerCase();const rows=filteredBalances().filter(b=>{const it=b.item;return [it.name,it.name_en,it.name_fr,it.name_zh,it.name_ln,it.item_code,it.part_number,it.machine_name_en,it.machine_name_fr,it.machine_name_zh,it.machine_name_ln,siteName(b.site_id)].join(" ").toLowerCase().includes(q)});$("invBody").innerHTML=rows.map(b=>{const it=b.item,alt=itemAlt(it),mach=machinePrimary(it),photo=it.photo_url?'<img class="photo-preview" src="'+esc(it.photo_url)+'">':"";return '<tr><td><div class="names"><b>'+esc(itemPrimary(it))+'</b>'+(alt?'<div class="alt">'+esc(alt)+'</div>':"")+(it.item_code?'<div class="alt">Code: '+esc(it.item_code)+'</div>':"")+(it.part_number?'<div class="alt">Part: '+esc(it.part_number)+'</div>':"")+(mach?'<div class="machine">Machine: '+esc(mach)+'</div>':"")+photo+'</div></td><td>'+esc(siteName(b.site_id))+'</td><td><b>'+fmt(b.expected)+' '+esc(it.unit)+'</b></td><td>'+fmt(b.received)+'</td><td>'+fmt(b.issued)+'</td><td>'+(b.physical===null?"—":fmt(b.physical))+'</td><td>'+(b.variance===null?"—":fmt(b.variance))+'</td><td><span class="pill '+(b.low?"low":"good")+'">'+(b.low?"LOW":"OK")+'</span></td></tr>'}).join("")||'<tr><td colspan="8" class="muted">No stock.</td></tr>'}
 $("invSearch").oninput=renderInventory;
 function renderHistory(){
@@ -283,6 +316,7 @@ function renderHistory(){
 $("histFilter").onchange=renderHistory;
 
 async function deleteHistoryRecord(index){
+  if(currentRole!=="admin")return note("Viewer access is read-only.");
   const x=window._historyRows?.[index];
   if(!x)return;
   const ok=confirm("Delete this "+x.kind.toLowerCase()+" record? This will change the stock balance/history.");
@@ -296,6 +330,7 @@ async function deleteHistoryRecord(index){
 }
 
 async function editHistoryRecord(index){
+  if(currentRole!=="admin")return note("Viewer access is read-only.");
   const x=window._historyRows?.[index];
   if(!x)return;
   const qtyRaw=prompt("Quantity",String(x.quantity));
@@ -355,6 +390,7 @@ function renderCatalogueList(){
   });
 }
 async function archiveItem(id){
+  if(currentRole!=="admin")return note("Viewer access is read-only.");
   const it=state.items.find(x=>x.id===id); if(!it)return;
   const hasHistory=state.movements.some(m=>m.item_id===id)||state.openings.some(o=>o.item_id===id)||state.counts.some(c=>c.item_id===id);
   const msg=hasHistory
