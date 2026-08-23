@@ -1,53 +1,534 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Bright Path Connection Test</title>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0f172a">
+<title>Bright Path Stock Control</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f6f8;color:#18212f}
-header{background:#101827;color:white;padding:28px 24px}header h1{margin:0;font-size:30px}header p{margin:7px 0 0;color:#cbd5e1}
-main{max-width:680px;margin:auto;padding:28px 20px}.card{background:white;border:1px solid #e5e7eb;border-radius:18px;padding:24px;margin:16px 0}
-label{display:block;font-weight:700;margin:15px 0 7px}input{width:100%;padding:14px;border:1px solid #cfd5dd;border-radius:10px;font-size:16px}
-button{width:100%;padding:14px;margin-top:14px;border:0;border-radius:10px;background:#101827;color:white;font-size:16px;font-weight:700}
-button.secondary{background:#e7ecf3;color:#18212f}#status{padding:14px;border-radius:10px;background:#fff3cd;margin-bottom:16px;white-space:pre-wrap}
-.ok{background:#dcfce7!important;color:#166534}.bad{background:#fee2e2!important;color:#991b1b}
-small{color:#64748b}code{word-break:break-all}
-</style></head>
-<body><header><h1>BRIGHT PATH</h1><p>Supabase connection test</p></header>
-<main>
-<div id="status">Starting…</div>
-<div class="card"><h2>1. Connection</h2><button type="button" id="ping">Test Supabase connection</button><small>This calls the Supabase Auth endpoint directly. No CDN library is used.</small></div>
-<div class="card"><h2>2. Account</h2>
-<label>Email</label><input id="email" type="email" autocomplete="email">
-<label>Password</label><input id="password" type="password" autocomplete="new-password">
-<button type="button" id="signup">Create account</button><button type="button" id="signin" class="secondary">Sign in</button>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#172033}
+header{background:#0f172a;color:#fff;padding:20px 18px;position:sticky;top:0;z-index:30}
+header h1{margin:0;font-size:24px} header p{margin:5px 0 0;color:#cbd5e1}
+.wrap{max-width:1100px;margin:auto;padding:14px}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:15px;padding:16px;margin:12px 0}
+.hidden{display:none!important}.muted{color:#64748b}.small{font-size:13px}.danger{color:#b91c1c}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:720px){.grid,.grid3{grid-template-columns:1fr}}
+label{display:block;font-weight:700;margin:10px 0 5px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:9px;font-size:16px;background:#fff}
+button{border:0;border-radius:9px;padding:12px 14px;background:#0f172a;color:white;font-weight:700;font-size:15px}
+button.secondary{background:#e8edf3;color:#172033}
+button.dangerBtn{background:#991b1b}
+button:disabled{opacity:.55}
+.auth{max-width:430px;margin:35px auto}
+.tabs{display:flex;gap:8px;overflow:auto;position:sticky;top:78px;background:#f4f6f8;padding:10px 0;z-index:20}
+.tabs button{white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:720px){.stats{grid-template-columns:1fr 1fr}}
+.stat{background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:14px}
+.stat b{display:block;font-size:26px;margin-top:4px}
+.status{padding:11px 12px;border-radius:10px;background:#fff3cd;color:#664d03;margin:10px 0}
+.status.ok{background:#dcfce7;color:#166534}.status.bad{background:#fee2e2;color:#991b1b}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between}.row>*{min-width:0}
+.item-entry{border:1px dashed #cbd5e1;border-radius:12px;padding:13px;margin:12px 0}
+.scroll{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:9px 7px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top}
+.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef2f7;font-size:12px}
+.low{background:#fee2e2;color:#991b1b}.good{background:#dcfce7;color:#166534}
+.notice{position:fixed;bottom:14px;left:12px;right:12px;max-width:650px;margin:auto;background:#111827;color:#fff;padding:12px 14px;border-radius:10px;display:none;z-index:100}
+.photo-preview{max-width:90px;max-height:70px;border-radius:8px;border:1px solid #e5e7eb;margin-top:6px}
+h2,h3{margin-top:0}
+</style>
+</head>
+<body>
+<header>
+  <h1>BRIGHT PATH</h1>
+  <p>Shared Stock Control • BL3 and other sites</p>
+</header>
+<div class="wrap">
+
+<section id="authBox" class="auth card">
+  <h2>Sign in</h2>
+  <p class="muted">Authorized users share the same live stock database.</p>
+  <div id="authStatus" class="status">Ready.</div>
+  <label>Email</label><input id="authEmail" type="email" autocomplete="email">
+  <label>Password</label><input id="authPassword" type="password" autocomplete="current-password">
+  <button type="button" id="signInBtn">Sign in</button>
+  <button type="button" id="createAccountBtn" class="secondary" style="margin-top:8px">Create account</button>
+  <p class="small muted">If email confirmation is temporarily rate-limited, the account may still be created in Supabase and can be confirmed by an administrator.</p>
+</section>
+
+<section id="appBox" class="hidden">
+  <div class="card row">
+    <div>
+      <b id="loggedInAs"></b>
+      <div id="syncStatus" class="small muted">Loading…</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button type="button" id="refreshBtn" class="secondary">Refresh</button>
+      <button type="button" id="signOutBtn" class="secondary">Sign out</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button type="button" data-tab="dashboard">Dashboard</button>
+    <button type="button" data-tab="addItems">Add Items</button>
+    <button type="button" data-tab="receive">Receive</button>
+    <button type="button" data-tab="issue">Issue</button>
+    <button type="button" data-tab="count">Count</button>
+    <button type="button" data-tab="inventory">Inventory</button>
+    <button type="button" data-tab="history">History</button>
+    <button type="button" data-tab="sites">Sites</button>
+  </div>
+
+  <section id="dashboard" class="tab">
+    <div class="stats">
+      <div class="stat">Active items<b id="stItems">0</b></div>
+      <div class="stat">Low stock<b id="stLow">0</b></div>
+      <div class="stat">Issued today<b id="stIssued">0</b></div>
+      <div class="stat">Transactions<b id="stTx">0</b></div>
+    </div>
+    <div class="grid">
+      <div class="card"><h3>Most used items</h3><div id="mostUsed"></div></div>
+      <div class="card"><h3>Needs attention</h3><div id="attention"></div></div>
+    </div>
+  </section>
+
+  <section id="addItems" class="tab hidden">
+    <div class="card">
+      <h2>Initial Stock Count / Add Items</h2>
+      <p class="muted">Start typing an item name and the next blank item appears automatically. Add as many as you need.</p>
+      <form id="itemsForm">
+        <div id="itemRows"></div>
+        <button type="submit">Save Items</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="receive" class="tab hidden">
+    <div class="card">
+      <h2>Receive Stock</h2>
+      <form id="receiveForm">
+        <label>Item</label><select id="rItem" required></select>
+        <div class="grid">
+          <div><label>Quantity received</label><input id="rQty" type="number" min="0.01" step="0.01" required></div>
+          <div><label>Site</label><select id="rSite" required></select></div>
+        </div>
+        <div class="grid">
+          <div><label>Received by</label><input id="rBy" required></div>
+          <div><label>Delivered by / source</label><input id="rSource"></div>
+        </div>
+        <label>Reference / delivery note</label><input id="rRef">
+        <label>Notes</label><textarea id="rNotes" rows="2"></textarea>
+        <button type="submit">Save Receipt</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="issue" class="tab hidden">
+    <div class="card">
+      <h2>Issue Stock</h2>
+      <form id="issueForm">
+        <label>Item</label><select id="iItem" required></select>
+        <div class="grid">
+          <div><label>Quantity issued</label><input id="iQty" type="number" min="0.01" step="0.01" required></div>
+          <div><label>Site</label><select id="iSite" required></select></div>
+        </div>
+        <div id="issueBalance" class="status">Select item and site to see stock remaining.</div>
+        <div class="grid">
+          <div><label>Issued by</label><input id="iBy" required></div>
+          <div><label>Taken / received by</label><input id="iTaken" required></div>
+        </div>
+        <label>Used for / machine / department</label><input id="iPurpose">
+        <label>Notes</label><textarea id="iNotes" rows="2"></textarea>
+        <button type="submit">Save Issue</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="count" class="tab hidden">
+    <div class="card">
+      <h2>Physical Stock Count</h2>
+      <form id="countForm">
+        <label>Item</label><select id="cItem" required></select>
+        <div class="grid">
+          <div><label>Physical quantity counted</label><input id="cQty" type="number" min="0" step="0.01" required></div>
+          <div><label>Site</label><select id="cSite" required></select></div>
+        </div>
+        <div id="countExpected" class="status">Select item and site to compare expected stock.</div>
+        <label>Counted by</label><input id="cBy" required>
+        <label>Notes / explanation for variance</label><textarea id="cNotes" rows="2"></textarea>
+        <button type="submit">Save Physical Count</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="inventory" class="tab hidden">
+    <div class="card">
+      <div class="row">
+        <div><h2>Current Inventory</h2><p class="muted">Expected balance = opening stock + receipts − issues.</p></div>
+        <input id="invSearch" placeholder="Search item / site / location" style="max-width:330px">
+      </div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Item</th><th>Site</th><th>Expected</th><th>Received</th><th>Issued</th><th>Physical</th><th>Variance</th><th>Status</th></tr></thead>
+          <tbody id="invBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="history" class="tab hidden">
+    <div class="card">
+      <div class="row"><h2>Transaction History</h2>
+        <select id="histFilter" style="max-width:220px"><option value="all">All</option><option value="receive">Received</option><option value="issue">Issued</option></select>
+      </div>
+      <div id="historyList"></div>
+    </div>
+  </section>
+
+  <section id="sites" class="tab hidden">
+    <div class="card">
+      <h2>Sites</h2>
+      <form id="siteForm">
+        <div class="grid">
+          <div><label>Site name</label><input id="siteName" placeholder="e.g. BL4" required></div>
+          <div><label>Code</label><input id="siteCode" placeholder="e.g. BL4"></div>
+        </div>
+        <button type="submit">Add Site</button>
+      </form>
+      <div id="siteList" style="margin-top:15px"></div>
+    </div>
+  </section>
+</section>
 </div>
-<div class="card"><h2>Result</h2><div id="result">Nothing sent yet.</div></div>
-</main>
+<div id="notice" class="notice"></div>
+
 <script>
-const BASE='https://psqirjistwghakjnymtw.supabase.co';
-const KEY='sb_publishable__QvK-7cNWqUsfDkAOJiYGQ_O4Ub_vj0';
-const statusEl=document.getElementById('status'), result=document.getElementById('result');
-function show(msg,ok){statusEl.textContent=msg;statusEl.className=ok===true?'ok':ok===false?'bad':'';}
-async function req(path,body){
-  const r=await fetch(BASE+path,{method:body?'POST':'GET',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+const BASE = "https://psqirjistwghakjnymtw.supabase.co";
+const KEY = "sb_publishable__QvK-7cNWqUsfDkAOJiYGQ_O4Ub_vj0";
+let accessToken = localStorage.getItem("bp_access") || "";
+let refreshToken = localStorage.getItem("bp_refresh") || "";
+let userEmail = localStorage.getItem("bp_email") || "";
+let state = {sites:[],items:[],movements:[],counts:[],balances:[]};
+let pollTimer = null;
+
+const $ = id => document.getElementById(id);
+function note(msg){ const n=$("notice"); n.textContent=msg; n.style.display="block"; setTimeout(()=>n.style.display="none",2600); }
+function setAuthStatus(msg,kind=""){ const e=$("authStatus"); e.textContent=msg; e.className="status"+(kind?" "+kind:""); }
+function showTab(id){ document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden")); $(id).classList.remove("hidden"); }
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+
+async function authReq(path, body){
+  const r = await fetch(BASE+path,{
+    method: body ? "POST":"GET",
+    headers: {"apikey":KEY,"Authorization":"Bearer "+KEY,"Content-Type":"application/json"},
+    body: body ? JSON.stringify(body):undefined
+  });
   const text=await r.text(); let data; try{data=JSON.parse(text)}catch{data=text}
-  if(!r.ok) throw new Error((data&&data.msg)||(data&&data.message)||(data&&data.error_description)||(data&&data.error)||('HTTP '+r.status));
+  if(!r.ok) throw new Error((data&&data.msg)||(data&&data.message)||(data&&data.error_description)||(data&&data.error)||("HTTP "+r.status));
   return data;
 }
-async function ping(){
- try{show('Testing Supabase…'); const d=await req('/auth/v1/settings'); show('Supabase reached successfully ✓',true); result.textContent='Auth endpoint responded. Connection is working.';}
- catch(e){show('Connection failed',false);result.textContent=e.message;}
+async function refreshSession(){
+  if(!refreshToken) return false;
+  try{
+    const d=await authReq("/auth/v1/token?grant_type=refresh_token",{refresh_token:refreshToken});
+    accessToken=d.access_token; refreshToken=d.refresh_token || refreshToken;
+    localStorage.setItem("bp_access",accessToken); localStorage.setItem("bp_refresh",refreshToken);
+    return true;
+  }catch(e){ return false; }
 }
-document.getElementById('ping').onclick=ping;
-document.getElementById('signup').onclick=async()=>{
- const email=document.getElementById('email').value.trim(), password=document.getElementById('password').value;
- if(!email||!password){result.textContent='Enter an email and password first.';return}
- try{show('Sending signup…');const d=await req('/auth/v1/signup',{email,password});show('Signup request reached Supabase ✓',true);result.textContent=d.access_token?'Account created and signed in.':'Account created. Check the email if confirmation is required.';}
- catch(e){show('Signup reached Supabase but returned an error',false);result.textContent=e.message;}
-};
-document.getElementById('signin').onclick=async()=>{
- const email=document.getElementById('email').value.trim(), password=document.getElementById('password').value;
- try{show('Signing in…');const d=await req('/auth/v1/token?grant_type=password',{email,password});show('Sign in successful ✓',true);result.textContent='Authenticated user: '+(d.user?.email||email);}
- catch(e){show('Sign in returned an error',false);result.textContent=e.message;}
-};
-ping();
-</script></body></html>
+async function authedFetch(url, opts={}){
+  if(!accessToken) throw new Error("Not signed in");
+  const headers=Object.assign({"apikey":KEY,"Authorization":"Bearer "+accessToken},opts.headers||{});
+  let r=await fetch(url,Object.assign({},opts,{headers}));
+  if(r.status===401 && await refreshSession()){
+    headers["Authorization"]="Bearer "+accessToken;
+    r=await fetch(url,Object.assign({},opts,{headers}));
+  }
+  return r;
+}
+async function rest(table, {method="GET", query="", body=null, prefer=""}={}){
+  const headers={"Content-Type":"application/json"};
+  if(prefer) headers["Prefer"]=prefer;
+  const r=await authedFetch(BASE+"/rest/v1/"+table+(query?("?"+query):""),{method,headers,body:body?JSON.stringify(body):undefined});
+  const text=await r.text(); let data; try{data=text?JSON.parse(text):null}catch{data=text}
+  if(!r.ok) throw new Error((data&&data.message)||(data&&data.details)||("HTTP "+r.status));
+  return data;
+}
+async function currentUser(){
+  if(!accessToken) return null;
+  const r=await authedFetch(BASE+"/auth/v1/user");
+  if(!r.ok) return null;
+  return await r.json();
+}
+function saveSession(d,email){
+  accessToken=d.access_token; refreshToken=d.refresh_token||"";
+  userEmail=d.user?.email||email;
+  localStorage.setItem("bp_access",accessToken); localStorage.setItem("bp_refresh",refreshToken); localStorage.setItem("bp_email",userEmail);
+}
+function clearSession(){ accessToken="";refreshToken="";userEmail=""; localStorage.removeItem("bp_access");localStorage.removeItem("bp_refresh");localStorage.removeItem("bp_email"); }
+
+$("signInBtn").addEventListener("click",async()=>{
+  const email=$("authEmail").value.trim(), password=$("authPassword").value;
+  if(!email||!password) return setAuthStatus("Enter email and password.","bad");
+  try{
+    setAuthStatus("Signing in…");
+    const d=await authReq("/auth/v1/token?grant_type=password",{email,password});
+    saveSession(d,email); setAuthStatus("Sign in successful ✓","ok"); await enterApp();
+  }catch(e){ setAuthStatus(e.message,"bad"); }
+});
+$("createAccountBtn").addEventListener("click",async()=>{
+  const email=$("authEmail").value.trim(), password=$("authPassword").value;
+  if(!email||!password) return setAuthStatus("Enter email and password.","bad");
+  try{
+    setAuthStatus("Creating account…");
+    const d=await authReq("/auth/v1/signup",{email,password});
+    if(d.access_token){ saveSession(d,email); setAuthStatus("Account created ✓","ok"); await enterApp(); }
+    else setAuthStatus("Account created. Email confirmation may be required.","ok");
+  }catch(e){ setAuthStatus(e.message,"bad"); }
+});
+$("signOutBtn").addEventListener("click",()=>{
+  clearSession(); if(pollTimer)clearInterval(pollTimer); location.reload();
+});
+$("refreshBtn").addEventListener("click",()=>loadAll(true));
+
+async function enterApp(){
+  $("authBox").classList.add("hidden"); $("appBox").classList.remove("hidden");
+  $("loggedInAs").textContent=userEmail || "Signed in";
+  resetItemRows();
+  await loadAll(true);
+  if(pollTimer) clearInterval(pollTimer);
+  pollTimer=setInterval(()=>loadAll(false),15000);
+}
+async function boot(){
+  if(accessToken){
+    let u=await currentUser();
+    if(!u && await refreshSession()) u=await currentUser();
+    if(u){ userEmail=u.email||userEmail; localStorage.setItem("bp_email",userEmail); await enterApp(); return; }
+    clearSession();
+  }
+  $("authBox").classList.remove("hidden");
+}
+function qs(s){ return encodeURIComponent(s); }
+
+async function loadAll(showToast=false){
+  try{
+    $("syncStatus").textContent="Syncing…";
+    const [sites,items,movements,counts]=await Promise.all([
+      rest("sites",{query:"select=*&active=eq.true&order=name.asc"}),
+      rest("items",{query:"select=*&active=eq.true&order=name.asc"}),
+      rest("stock_movements",{query:"select=*&order=occurred_at.desc&limit=1000"}),
+      rest("physical_counts",{query:"select=*&order=counted_at.desc&limit=1000"})
+    ]);
+    state.sites=sites||[]; state.items=items||[]; state.movements=movements||[]; state.counts=counts||[];
+    calculateBalances(); renderAll();
+    $("syncStatus").textContent="Live • last sync "+new Date().toLocaleTimeString()+" • auto-refresh 15s";
+    if(showToast) note("Stock data synced ✓");
+  }catch(e){ $("syncStatus").textContent="Sync error: "+e.message; if(showToast) note(e.message); }
+}
+
+function calculateBalances(){
+  const map=new Map();
+  for(const item of state.items){
+    if(item.default_site_id){
+      const key=item.id+"|"+item.default_site_id;
+      map.set(key,{item_id:item.id,site_id:item.default_site_id,opening:Number(item.opening_quantity||0),received:0,issued:0,item,site:null});
+    }
+  }
+  for(const m of state.movements){
+    const key=m.item_id+"|"+m.site_id;
+    if(!map.has(key)){
+      const item=state.items.find(x=>x.id===m.item_id);
+      if(!item) continue;
+      map.set(key,{item_id:m.item_id,site_id:m.site_id,opening:0,received:0,issued:0,item,site:null});
+    }
+    const b=map.get(key), q=Number(m.quantity||0);
+    if(m.movement_type==="receive"||m.movement_type==="adjustment_in") b.received+=q;
+    if(m.movement_type==="issue"||m.movement_type==="adjustment_out") b.issued+=q;
+  }
+  const latestCount=new Map();
+  for(const c of state.counts){
+    const key=c.item_id+"|"+c.site_id;
+    if(!latestCount.has(key)) latestCount.set(key,c);
+  }
+  state.balances=[...map.values()].map(b=>{
+    b.site=state.sites.find(s=>s.id===b.site_id);
+    b.expected=b.opening+b.received-b.issued;
+    const c=latestCount.get(b.item_id+"|"+b.site_id);
+    b.physical=c?Number(c.physical_quantity):null;
+    b.variance=c?b.physical-b.expected:null;
+    b.low=b.expected<=Number(b.item.minimum_level||0);
+    return b;
+  }).sort((a,b)=>a.item.name.localeCompare(b.item.name));
+}
+
+function fillSelect(id, rows, placeholder){
+  $(id).innerHTML='<option value="">'+placeholder+'</option>'+rows.map(x=>'<option value="'+x.id+'">'+escapeHtml(x.name)+'</option>').join("");
+}
+function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+
+function renderAll(){
+  ["rItem","iItem","cItem"].forEach(id=>fillSelect(id,state.items,"Select item"));
+  ["rSite","iSite","cSite"].forEach(id=>fillSelect(id,state.sites,"Select site"));
+  $("siteList").innerHTML=state.sites.map(s=>'<p><b>'+escapeHtml(s.name)+'</b> <span class="muted">'+escapeHtml(s.code||"")+'</span></p>').join("")||'<p class="muted">No sites.</p>';
+  $("stItems").textContent=state.items.length;
+  $("stLow").textContent=state.balances.filter(b=>b.low).length;
+  const today=new Date().toISOString().slice(0,10);
+  $("stIssued").textContent=state.movements.filter(m=>m.movement_type==="issue"&&m.occurred_at.slice(0,10)===today).reduce((a,m)=>a+Number(m.quantity),0);
+  $("stTx").textContent=state.movements.length;
+  const usage={}; state.movements.filter(m=>m.movement_type==="issue").forEach(m=>usage[m.item_id]=(usage[m.item_id]||0)+Number(m.quantity));
+  const ranked=Object.entries(usage).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  $("mostUsed").innerHTML=ranked.length?ranked.map(([id,q],i)=>'<div class="row"><span>'+(i+1)+'. '+escapeHtml(itemName(id))+'</span><b>'+q+'</b></div>').join(""):'<p class="muted">No issued stock yet.</p>';
+  const lows=state.balances.filter(b=>b.low);
+  $("attention").innerHTML=lows.length?lows.slice(0,12).map(b=>'<div class="row"><span>'+escapeHtml(b.item.name)+' • '+escapeHtml(siteName(b.site_id))+'</span><span class="pill low">'+fmt(b.expected)+' '+escapeHtml(b.item.unit)+'</span></div>').join(""):'<p class="muted">Nothing needs attention.</p>';
+  renderInventory(); renderHistory(); updateIssueBalance(); updateCountExpected();
+}
+function itemName(id){return state.items.find(x=>x.id===id)?.name||"Unknown item"}
+function siteName(id){return state.sites.find(x=>x.id===id)?.name||"Unknown site"}
+function fmt(n){return Number.isInteger(Number(n))?String(Number(n)):Number(n).toFixed(2)}
+
+function renderInventory(){
+  const q=($("invSearch").value||"").toLowerCase();
+  const rows=state.balances.filter(b=>[b.item.name,siteName(b.site_id),b.item.storage_location||""].join(" ").toLowerCase().includes(q));
+  $("invBody").innerHTML=rows.map(b=>{
+    const photo=b.item.photo_url?'<br><img class="photo-preview" src="'+escapeHtml(b.item.photo_url)+'">':"";
+    return '<tr><td><b>'+escapeHtml(b.item.name)+'</b><br><span class="muted">'+escapeHtml(b.item.storage_location||"")+'</span>'+photo+'</td>'+
+      '<td>'+escapeHtml(siteName(b.site_id))+'</td><td><b>'+fmt(b.expected)+' '+escapeHtml(b.item.unit)+'</b></td>'+
+      '<td>'+fmt(b.received)+'</td><td>'+fmt(b.issued)+'</td><td>'+(b.physical===null?"—":fmt(b.physical))+'</td>'+
+      '<td>'+(b.variance===null?"—":fmt(b.variance))+'</td><td><span class="pill '+(b.low?"low":"good")+'">'+(b.low?"LOW":"OK")+'</span></td></tr>';
+  }).join("")||'<tr><td colspan="8" class="muted">No stock items yet.</td></tr>';
+}
+$("invSearch").addEventListener("input",renderInventory);
+
+function renderHistory(){
+  const f=$("histFilter").value;
+  const rows=state.movements.filter(m=>f==="all"||m.movement_type===f).slice(0,250);
+  $("historyList").innerHTML=rows.length?rows.map(m=>'<div class="card"><div class="row"><b>'+escapeHtml(itemName(m.item_id))+'</b><span class="pill">'+escapeHtml(m.movement_type.toUpperCase())+'</span></div>'+
+  '<div>'+fmt(m.quantity)+' • '+escapeHtml(siteName(m.site_id))+'</div><div class="small muted">'+new Date(m.occurred_at).toLocaleString()+'</div>'+
+  '<div class="small muted">'+escapeHtml(m.received_by||m.taken_by||m.issued_by||"")+(m.purpose?" • "+escapeHtml(m.purpose):"")+'</div></div>').join(""):'<p class="muted">No transactions yet.</p>';
+}
+$("histFilter").addEventListener("change",renderHistory);
+
+let itemNo=0;
+function resetItemRows(){ itemNo=0; $("itemRows").innerHTML=""; addItemRow(); }
+function siteOptions(){return '<option value="">Select site</option>'+state.sites.map(s=>'<option value="'+s.id+'">'+escapeHtml(s.name)+'</option>').join("")}
+function addItemRow(){
+  itemNo++;
+  const d=document.createElement("div"); d.className="item-entry";
+  d.innerHTML='<h3>Item '+itemNo+'</h3>'+
+  '<label>Item name</label><input class="n" required placeholder="Enter item name">'+
+  '<div class="grid3"><div><label>Opening quantity</label><input class="q" type="number" min="0" step="0.01" value="0"></div>'+
+  '<div><label>Unit</label><input class="u" value="pieces" required></div><div><label>Category</label><input class="cat" placeholder="Optional"></div></div>'+
+  '<div class="grid"><div><label>Site</label><select class="s" required>'+siteOptions()+'</select></div>'+
+  '<div><label>Stock location</label><input class="loc" placeholder="Store / shelf / area"></div></div>'+
+  '<label>Minimum stock level</label><input class="min" type="number" min="0" step="0.01" value="0">'+
+  '<label>Notes</label><textarea class="notes" rows="2"></textarea>'+
+  '<label>Item photo (optional — last field)</label><input class="photo" type="file" accept="image/*">';
+  $("itemRows").appendChild(d);
+  const n=d.querySelector(".n");
+  n.addEventListener("input",()=>{ const cards=[...document.querySelectorAll(".item-entry")]; if(cards[cards.length-1]===d&&n.value.trim()) addItemRow(); });
+}
+
+async function uploadPhoto(file){
+  if(!file) return null;
+  const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+  const path="items/"+Date.now()+"-"+Math.random().toString(36).slice(2)+"-"+safe;
+  const r=await authedFetch(BASE+"/storage/v1/object/stock-photos/"+path,{method:"POST",headers:{"Content-Type":file.type||"application/octet-stream","x-upsert":"false"},body:file});
+  const text=await r.text();
+  if(!r.ok) throw new Error("Photo upload failed: "+text);
+  return BASE+"/storage/v1/object/public/stock-photos/"+path;
+}
+
+$("itemsForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const cards=[...document.querySelectorAll(".item-entry")].filter(d=>d.querySelector(".n").value.trim());
+  if(!cards.length) return note("Enter at least one item.");
+  const btn=e.submitter; if(btn)btn.disabled=true;
+  try{
+    for(const d of cards){
+      let photoUrl=null;
+      const file=d.querySelector(".photo").files[0];
+      if(file){ try{photoUrl=await uploadPhoto(file);}catch(err){note(err.message+" — saving item without photo.");} }
+      const rec={
+        name:d.querySelector(".n").value.trim(),
+        category:d.querySelector(".cat").value.trim()||null,
+        opening_quantity:Number(d.querySelector(".q").value||0),
+        unit:d.querySelector(".u").value.trim()||"pieces",
+        default_site_id:d.querySelector(".s").value,
+        storage_location:d.querySelector(".loc").value.trim()||null,
+        minimum_level:Number(d.querySelector(".min").value||0),
+        notes:d.querySelector(".notes").value.trim()||null,
+        photo_url:photoUrl
+      };
+      await rest("items",{method:"POST",body:rec,prefer:"return=representation"});
+    }
+    note("Items saved ✓"); await loadAll(false); resetItemRows(); showTab("inventory");
+  }catch(err){note(err.message);} finally{if(btn)btn.disabled=false;}
+});
+
+$("receiveForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  try{
+    await rest("stock_movements",{method:"POST",prefer:"return=representation",body:{
+      item_id:$("rItem").value,site_id:$("rSite").value,movement_type:"receive",quantity:Number($("rQty").value),
+      received_by:$("rBy").value.trim(),source:$("rSource").value.trim()||null,reference:$("rRef").value.trim()||null,notes:$("rNotes").value.trim()||null
+    }});
+    e.target.reset(); note("Stock received ✓"); await loadAll(false); showTab("inventory");
+  }catch(err){note(err.message);}
+});
+
+function getBalance(itemId,siteId){return state.balances.find(b=>b.item_id===itemId&&b.site_id===siteId)}
+function updateIssueBalance(){
+  const b=getBalance($("iItem").value,$("iSite").value);
+  $("issueBalance").textContent=b?"Stock remaining: "+fmt(b.expected)+" "+b.item.unit:"No stock balance found for this item/site.";
+  $("issueBalance").className="status"+(b&&b.expected>0?" ok":"");
+}
+$("iItem").addEventListener("change",updateIssueBalance); $("iSite").addEventListener("change",updateIssueBalance);
+
+$("issueForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const qty=Number($("iQty").value), b=getBalance($("iItem").value,$("iSite").value);
+  if(!b) return note("No stock balance exists for this item/site.");
+  if(qty>b.expected) return note("Cannot issue "+qty+". Only "+fmt(b.expected)+" remains.");
+  try{
+    await rest("stock_movements",{method:"POST",prefer:"return=representation",body:{
+      item_id:$("iItem").value,site_id:$("iSite").value,movement_type:"issue",quantity:qty,
+      issued_by:$("iBy").value.trim(),taken_by:$("iTaken").value.trim(),purpose:$("iPurpose").value.trim()||null,notes:$("iNotes").value.trim()||null
+    }});
+    e.target.reset(); note("Stock issued ✓"); await loadAll(false); showTab("inventory");
+  }catch(err){note(err.message);}
+});
+
+function updateCountExpected(){
+  const b=getBalance($("cItem").value,$("cSite").value);
+  $("countExpected").textContent=b?"Expected stock: "+fmt(b.expected)+" "+b.item.unit:"No expected balance found for this item/site.";
+  $("countExpected").className="status"+(b?" ok":"");
+}
+$("cItem").addEventListener("change",updateCountExpected); $("cSite").addEventListener("change",updateCountExpected);
+
+$("countForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  try{
+    await rest("physical_counts",{method:"POST",prefer:"return=representation",body:{
+      item_id:$("cItem").value,site_id:$("cSite").value,physical_quantity:Number($("cQty").value),
+      counted_by:$("cBy").value.trim(),notes:$("cNotes").value.trim()||null
+    }});
+    e.target.reset(); note("Physical count saved ✓"); await loadAll(false); showTab("inventory");
+  }catch(err){note(err.message);}
+});
+
+$("siteForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  try{
+    await rest("sites",{method:"POST",prefer:"return=representation",body:{name:$("siteName").value.trim(),code:$("siteCode").value.trim()||null}});
+    e.target.reset(); note("Site added ✓"); await loadAll(false); resetItemRows();
+  }catch(err){note(err.message);}
+});
+
+boot();
+</script>
+</body></html>
