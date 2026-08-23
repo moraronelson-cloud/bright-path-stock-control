@@ -232,8 +232,8 @@ function siteName(id){return state.sites.find(s=>s.id===id)?.name||"Unknown"}
 function itemName(id){const it=state.items.find(x=>x.id===id);return it?itemPrimary(it):"Unknown"}
 function filteredBalances(){return currentSite==="all"?state.balances:state.balances.filter(b=>b.site_id===currentSite)}
 function filteredMovements(){return currentSite==="all"?state.movements:state.movements.filter(m=>m.site_id===currentSite)}
-function fillSelect(id,rows,placeholder){$(id).innerHTML='<option value="">'+placeholder+'</option>'+rows.map(x=>'<option value="'+x.id+'">'+esc(itemPrimary(x)||x.name)+'</option>').join("")}
-function fillSite(id,placeholder){$(id).innerHTML='<option value="">'+placeholder+'</option>'+state.sites.map(x=>'<option value="'+x.id+'">'+esc(x.name)+'</option>').join("")}
+function fillSelect(id,rows,placeholder){const el=$(id),prev=el.value;el.innerHTML='<option value="">'+placeholder+'</option>'+rows.map(x=>'<option value="'+x.id+'">'+esc(itemPrimary(x)||x.name)+'</option>').join("");if(prev&&[...el.options].some(o=>o.value===prev))el.value=prev}
+function fillSite(id,placeholder){const el=$(id),prev=el.value;el.innerHTML='<option value="">'+placeholder+'</option>'+state.sites.map(x=>'<option value="'+x.id+'">'+esc(x.name)+'</option>').join("");if(prev&&[...el.options].some(o=>o.value===prev))el.value=prev}
 function renderAll(){if(!$("appBox")||$("appBox").classList.contains("hidden"))return;
 const gs=$("globalSiteFilter");gs.innerHTML='<option value="all">All Sites</option>'+state.sites.map(s=>'<option value="'+s.id+'">'+esc(s.name)+'</option>').join("");if(![...gs.options].some(o=>o.value===currentSite))currentSite="all";gs.value=currentSite;
 ["oItem","rItem","iItem","cItem"].forEach(id=>fillSelect(id,state.items,"Select item"));["oSite","rSite","iSite","cSite"].forEach(id=>fillSite(id,"Select site"));
