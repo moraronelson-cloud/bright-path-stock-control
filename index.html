@@ -13,7 +13,7 @@ header h1{margin:0;font-size:24px} header p{margin:4px 0 0;color:#cbd5e1}
 .hidden{display:none!important}.muted{color:#64748b}.small{font-size:13px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}@media(max-width:760px){.grid,.grid3{grid-template-columns:1fr}}
 label{display:block;font-weight:700;margin:10px 0 5px}input,select,textarea{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:9px;font-size:16px;background:#fff}
-button{border:0;border-radius:9px;padding:12px 14px;background:#0f172a;color:#fff;font-weight:700;font-size:15px}button.secondary{background:#e8edf3;color:#172033}button:disabled{opacity:.55}
+button{border:0;border-radius:9px;padding:12px 14px;background:#0f172a;color:#fff;font-weight:700;font-size:15px}button.secondary{background:#e8edf3;color:#172033}button.dangerBtn{background:#991b1b}button.smallBtn{padding:7px 10px;font-size:13px}button:disabled{opacity:.55}
 .auth{max-width:430px;margin:30px auto}.toolbar{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end}@media(max-width:700px){.toolbar{grid-template-columns:1fr 1fr}.toolbar .who{grid-column:1/-1}}
 .tabs{display:flex;gap:8px;overflow:auto;position:sticky;top:76px;background:#f4f6f8;padding:10px 0;z-index:20}.tabs button{white-space:nowrap}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}@media(max-width:700px){.stats{grid-template-columns:1fr 1fr}}
@@ -68,14 +68,14 @@ details{margin-top:8px}summary{font-weight:700;cursor:pointer}h2,h3{margin-top:0
 
   <div class="tabs">
     <button type="button" data-tab="dashboard" data-i18n="dashboard">Dashboard</button>
-    <button type="button" data-tab="catalogue" data-i18n="catalogue">Item Catalogue</button>
-    <button type="button" data-tab="opening" data-i18n="openingStock">Opening Stock</button>
+    <button type="button" data-tab="inventory" data-i18n="inventory">Inventory</button>
     <button type="button" data-tab="receive" data-i18n="receive">Receive</button>
     <button type="button" data-tab="issue" data-i18n="issue">Issue</button>
     <button type="button" data-tab="count" data-i18n="count">Count</button>
-    <button type="button" data-tab="inventory" data-i18n="inventory">Inventory</button>
+    <button type="button" data-tab="opening" data-i18n="openingStock">Opening Stock</button>
     <button type="button" data-tab="history" data-i18n="history">History</button>
     <button type="button" data-tab="sites" data-i18n="sites">Sites</button>
+    <button type="button" data-tab="catalogue" data-i18n="catalogue">Item Catalogue</button>
   </div>
 
   <section id="dashboard" class="tab">
@@ -96,6 +96,9 @@ details{margin-top:8px}summary{font-weight:700;cursor:pointer}h2,h3{margin-top:0
       <h2 data-i18n="catalogue">Item Catalogue</h2>
       <p class="muted" data-i18n="catalogueHelp">Create each item once. At least one item name and the unit are required. Everything else is optional.</p>
       <form id="itemsForm"><div id="itemRows"></div><button type="submit" data-i18n="saveItems">Save Items</button></form>
+      <hr style="margin:22px 0;border:0;border-top:1px solid #e5e7eb">
+      <h3>Existing Catalogue</h3>
+      <div id="catalogueList"></div>
     </div>
   </section>
 
@@ -174,7 +177,7 @@ details{margin-top:8px}summary{font-weight:700;cursor:pointer}h2,h3{margin-top:0
     </div>
   </section>
 
-  <section id="history" class="tab hidden"><div class="card"><div class="row"><h2 data-i18n="history">History</h2><select id="histFilter"><option value="all">All</option><option value="opening">Opening</option><option value="receive">Received</option><option value="issue">Issued</option></select></div><div id="historyList"></div></div></section>
+  <section id="history" class="tab hidden"><div class="card"><div class="row"><h2 data-i18n="history">History</h2><select id="histFilter"><option value="all">All</option><option value="opening">Opening</option><option value="receive">Received</option><option value="issue">Issued</option><option value="count">Physical Count</option></select></div><div id="historyList"></div></div></section>
 
   <section id="sites" class="tab hidden">
     <div class="card"><h2 data-i18n="sites">Sites</h2><form id="siteForm"><div class="grid"><div><label data-i18n="siteName">Site name</label><input id="siteName" required></div><div><label data-i18n="code">Code</label><input id="siteCode"></div></div><button type="submit" data-i18n="addSite">Add Site</button></form><div id="siteList" style="margin-top:15px"></div></div>
@@ -241,12 +244,125 @@ $("siteList").innerHTML=state.sites.map(s=>'<p><b>'+esc(s.name)+'</b> <span clas
 const bals=filteredBalances(),movs=filteredMovements();$("stItems").textContent=new Set(bals.map(b=>b.item_id)).size;$("stLow").textContent=bals.filter(b=>b.low).length;const today=new Date().toISOString().slice(0,10);$("stIssued").textContent=movs.filter(m=>m.movement_type==="issue"&&m.occurred_at.slice(0,10)===today).reduce((a,m)=>a+Number(m.quantity),0);$("stTx").textContent=movs.length;
 const usage={};movs.filter(m=>m.movement_type==="issue").forEach(m=>usage[m.item_id]=(usage[m.item_id]||0)+Number(m.quantity));$("mostUsed").innerHTML=Object.entries(usage).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([id,q],i)=>'<div class="row"><span>'+(i+1)+'. '+esc(itemName(id))+'</span><b>'+fmt(q)+'</b></div>').join("")||'<p class="muted">—</p>';
 $("attention").innerHTML=bals.filter(b=>b.low).slice(0,12).map(b=>'<div class="row"><span>'+esc(itemPrimary(b.item))+' • '+esc(siteName(b.site_id))+'</span><span class="pill low">'+fmt(b.expected)+' '+esc(b.item.unit)+'</span></div>').join("")||'<p class="muted">—</p>';
-renderInventory();renderHistory();updateIssueBalance();updateCountExpected()}
+renderInventory();renderHistory();renderCatalogueList();updateIssueBalance();updateCountExpected()}
 function renderInventory(){const q=($("invSearch").value||"").toLowerCase();const rows=filteredBalances().filter(b=>{const it=b.item;return [it.name,it.name_en,it.name_fr,it.name_zh,it.name_ln,it.item_code,it.part_number,it.machine_name_en,it.machine_name_fr,it.machine_name_zh,it.machine_name_ln,siteName(b.site_id)].join(" ").toLowerCase().includes(q)});$("invBody").innerHTML=rows.map(b=>{const it=b.item,alt=itemAlt(it),mach=machinePrimary(it),photo=it.photo_url?'<img class="photo-preview" src="'+esc(it.photo_url)+'">':"";return '<tr><td><div class="names"><b>'+esc(itemPrimary(it))+'</b>'+(alt?'<div class="alt">'+esc(alt)+'</div>':"")+(it.item_code?'<div class="alt">Code: '+esc(it.item_code)+'</div>':"")+(it.part_number?'<div class="alt">Part: '+esc(it.part_number)+'</div>':"")+(mach?'<div class="machine">Machine: '+esc(mach)+'</div>':"")+photo+'</div></td><td>'+esc(siteName(b.site_id))+'</td><td><b>'+fmt(b.expected)+' '+esc(it.unit)+'</b></td><td>'+fmt(b.received)+'</td><td>'+fmt(b.issued)+'</td><td>'+(b.physical===null?"—":fmt(b.physical))+'</td><td>'+(b.variance===null?"—":fmt(b.variance))+'</td><td><span class="pill '+(b.low?"low":"good")+'">'+(b.low?"LOW":"OK")+'</span></td></tr>'}).join("")||'<tr><td colspan="8" class="muted">No stock.</td></tr>'}
 $("invSearch").oninput=renderInventory;
-function renderHistory(){const f=$("histFilter").value;let arr=[];if(f==="all"||f==="opening")arr.push(...state.openings.filter(o=>currentSite==="all"||o.site_id===currentSite).map(o=>({kind:"OPENING",date:o.as_of_date,item_id:o.item_id,site_id:o.site_id,quantity:o.quantity,who:o.recorded_by||"",notes:o.notes||""})));if(f==="all"||f==="receive"||f==="issue")arr.push(...state.movements.filter(m=>(currentSite==="all"||m.site_id===currentSite)&&(f==="all"||m.movement_type===f)).map(m=>({kind:m.movement_type.toUpperCase(),date:m.occurred_at,item_id:m.item_id,site_id:m.site_id,quantity:m.quantity,who:m.received_by||m.taken_by||m.issued_by||"",notes:m.purpose||m.notes||""})));arr.sort((a,b)=>new Date(b.date)-new Date(a.date));$("historyList").innerHTML=arr.slice(0,300).map(x=>'<div class="card"><div class="row"><b>'+esc(itemName(x.item_id))+'</b><span class="pill">'+esc(x.kind)+'</span></div><div>'+fmt(x.quantity)+' • '+esc(siteName(x.site_id))+'</div><div class="small muted">'+new Date(x.date).toLocaleString()+'</div><div class="small muted">'+esc(x.who)+(x.notes?" • "+esc(x.notes):"")+'</div></div>').join("")||'<p class="muted">—</p>'}
+function renderHistory(){
+  const f=$("histFilter").value;
+  let arr=[];
+  if(f==="all"||f==="opening"){
+    arr.push(...state.openings
+      .filter(o=>currentSite==="all"||o.site_id===currentSite)
+      .map(o=>({source:"opening_stock",id:o.id,kind:"OPENING",date:o.as_of_date,item_id:o.item_id,site_id:o.site_id,quantity:o.quantity,who:o.recorded_by||"",notes:o.notes||""})));
+  }
+  if(f==="all"||f==="receive"||f==="issue"){
+    arr.push(...state.movements
+      .filter(m=>(currentSite==="all"||m.site_id===currentSite)&&(f==="all"||m.movement_type===f))
+      .map(m=>({source:"stock_movements",id:m.id,kind:m.movement_type.toUpperCase(),movement_type:m.movement_type,date:m.occurred_at,item_id:m.item_id,site_id:m.site_id,quantity:m.quantity,who:m.received_by||m.taken_by||m.issued_by||"",notes:m.purpose||m.notes||""})));
+  }
+  if(f==="all"||f==="count"){
+    arr.push(...state.counts
+      .filter(c=>currentSite==="all"||c.site_id===currentSite)
+      .map(c=>({source:"physical_counts",id:c.id,kind:"COUNT",date:c.counted_at,item_id:c.item_id,site_id:c.site_id,quantity:c.physical_quantity,who:c.counted_by||"",notes:c.notes||""})));
+  }
+  arr.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  window._historyRows=arr;
+  $("historyList").innerHTML=arr.slice(0,300).map((x,i)=>
+    '<div class="card">'+
+      '<div class="row"><b>'+esc(itemName(x.item_id))+'</b><span class="pill">'+esc(x.kind)+'</span></div>'+
+      '<div>'+fmt(x.quantity)+' • '+esc(siteName(x.site_id))+'</div>'+
+      '<div class="small muted">'+new Date(x.date).toLocaleString()+'</div>'+
+      '<div class="small muted">'+esc(x.who)+(x.notes?" • "+esc(x.notes):"")+'</div>'+
+      '<div style="display:flex;gap:8px;margin-top:10px">'+
+        '<button type="button" class="secondary smallBtn" onclick="editHistoryRecord('+i+')">Edit</button>'+
+        '<button type="button" class="dangerBtn smallBtn" onclick="deleteHistoryRecord('+i+')">Delete</button>'+
+      '</div>'+
+    '</div>'
+  ).join("")||'<p class="muted">—</p>';
+}
 $("histFilter").onchange=renderHistory;
 
+async function deleteHistoryRecord(index){
+  const x=window._historyRows?.[index];
+  if(!x)return;
+  const ok=confirm("Delete this "+x.kind.toLowerCase()+" record? This will change the stock balance/history.");
+  if(!ok)return;
+  try{
+    await rest(x.source,{method:"DELETE",query:"id=eq."+encodeURIComponent(x.id),prefer:"return=representation"});
+    note("Record deleted ✓");
+    await loadAll(false);
+    renderHistory();
+  }catch(err){note(err.message)}
+}
+
+async function editHistoryRecord(index){
+  const x=window._historyRows?.[index];
+  if(!x)return;
+  const qtyRaw=prompt("Quantity",String(x.quantity));
+  if(qtyRaw===null)return;
+  const qty=Number(qtyRaw);
+  if(!Number.isFinite(qty)||qty<0)return note("Enter a valid quantity.");
+  const siteChoices=state.sites.map((s,i)=>(i+1)+". "+s.name).join("\\n");
+  const currentSiteIndex=Math.max(0,state.sites.findIndex(s=>s.id===x.site_id));
+  const siteRaw=prompt("Site number:\\n"+siteChoices,String(currentSiteIndex+1));
+  if(siteRaw===null)return;
+  const site=state.sites[Number(siteRaw)-1];
+  if(!site)return note("Invalid site selection.");
+
+  let body={site_id:site.id};
+  if(x.source==="opening_stock"){
+    body.quantity=qty;
+    const d=prompt("As-of date (YYYY-MM-DD)",String(x.date).slice(0,10));
+    if(d===null)return;
+    body.as_of_date=d;
+  }else if(x.source==="stock_movements"){
+    if(qty<=0)return note("Transaction quantity must be greater than 0.");
+    body.quantity=qty;
+    const localDate=new Date(x.date);
+    const z=n=>String(n).padStart(2,"0");
+    const def=localDate.getFullYear()+"-"+z(localDate.getMonth()+1)+"-"+z(localDate.getDate())+"T"+z(localDate.getHours())+":"+z(localDate.getMinutes());
+    const d=prompt("Date/time (YYYY-MM-DDTHH:MM)",def);
+    if(d===null)return;
+    body.occurred_at=new Date(d).toISOString();
+  }else if(x.source==="physical_counts"){
+    body.physical_quantity=qty;
+    const localDate=new Date(x.date);
+    const z=n=>String(n).padStart(2,"0");
+    const def=localDate.getFullYear()+"-"+z(localDate.getMonth()+1)+"-"+z(localDate.getDate())+"T"+z(localDate.getHours())+":"+z(localDate.getMinutes());
+    const d=prompt("Count date/time (YYYY-MM-DDTHH:MM)",def);
+    if(d===null)return;
+    body.counted_at=new Date(d).toISOString();
+  }
+
+  try{
+    await rest(x.source,{method:"PATCH",query:"id=eq."+encodeURIComponent(x.id),body,prefer:"return=representation"});
+    note("Record updated ✓");
+    await loadAll(false);
+    renderHistory();
+  }catch(err){note(err.message)}
+}
+
+function renderCatalogueList(){
+  if(!$("catalogueList"))return;
+  $("catalogueList").innerHTML=state.items.map(it=>
+    '<div class="card"><div class="row"><div><b>'+esc(itemPrimary(it))+'</b>'+
+    (itemAlt(it)?'<div class="alt">'+esc(itemAlt(it))+'</div>':"")+
+    (it.item_code?'<div class="alt">Code: '+esc(it.item_code)+'</div>':"")+
+    '</div><button type="button" class="dangerBtn smallBtn" onclick="archiveItem(\\''+it.id+'\\')">Archive</button></div></div>'
+  ).join("")||'<p class="muted">No items yet.</p>';
+}
+async function archiveItem(id){
+  const it=state.items.find(x=>x.id===id); if(!it)return;
+  const hasHistory=state.movements.some(m=>m.item_id===id)||state.openings.some(o=>o.item_id===id)||state.counts.some(c=>c.item_id===id);
+  const msg=hasHistory
+    ?"Archive "+itemPrimary(it)+"? Its history will stay intact, but it will stop appearing in normal item lists."
+    :"Archive "+itemPrimary(it)+"?";
+  if(!confirm(msg))return;
+  try{
+    await rest("items",{method:"PATCH",query:"id=eq."+encodeURIComponent(id),body:{active:false},prefer:"return=representation"});
+    note("Item archived ✓"); await loadAll(false);
+  }catch(err){note(err.message)}
+}
 let itemNo=0;function resetItemRows(){itemNo=0;$("itemRows").innerHTML="";addItemRow()}
 function addItemRow(){itemNo++;const d=document.createElement("div");d.className="item-entry";d.innerHTML='<h3>Item '+itemNo+'</h3><div class="grid"><div><label>English name</label><input class="en"></div><div><label>Nom français</label><input class="fr"></div><div><label>中文名称</label><input class="zh"></div><div><label>Lingala name</label><input class="ln"></div></div><label>Unit *</label><input class="unit" value="pieces"><details><summary>More details (optional)</summary><div class="grid"><div><label>Item code</label><input class="code"></div><div><label>Category</label><input class="cat"></div><div><label>Part number / model</label><input class="part"></div><div><label>Manufacturer / brand</label><input class="maker"></div></div><h4>Machine / equipment names</h4><div class="grid"><div><label>English</label><input class="men"></div><div><label>Français</label><input class="mfr"></div><div><label>中文</label><input class="mzh"></div><div><label>Lingala</label><input class="mln"></div></div><label>Notes</label><textarea class="notes"></textarea><label>Photo (optional — last field)</label><input class="photo" type="file" accept="image/*"></details>';$("itemRows").appendChild(d);const names=[...d.querySelectorAll(".en,.fr,.zh,.ln")];names.forEach(inp=>inp.addEventListener("input",()=>{const cards=[...document.querySelectorAll(".item-entry")],has=names.some(x=>x.value.trim());if(cards[cards.length-1]===d&&has)addItemRow()}))}
 async function uploadPhoto(file){if(!file)return null;const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"_"),path="items/"+Date.now()+"-"+Math.random().toString(36).slice(2)+"-"+safe;const r=await authedFetch(BASE+"/storage/v1/object/stock-photos/"+path,{method:"POST",headers:{"Content-Type":file.type||"application/octet-stream","x-upsert":"false"},body:file});if(!r.ok)throw new Error("Photo upload failed");return BASE+"/storage/v1/object/public/stock-photos/"+path}
