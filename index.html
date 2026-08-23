@@ -17,7 +17,7 @@ button{border:0;border-radius:9px;padding:12px 14px;background:#0f172a;color:#ff
 .auth{max-width:430px;margin:30px auto}.toolbar{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end}@media(max-width:700px){.toolbar{grid-template-columns:1fr 1fr}.toolbar .who{grid-column:1/-1}}
 .tabs{display:flex;gap:8px;overflow:auto;position:sticky;top:76px;background:#f4f6f8;padding:10px 0;z-index:20}.tabs button{white-space:nowrap}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}@media(max-width:700px){.stats{grid-template-columns:1fr 1fr}}
-.stat{background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:14px}.stat b{display:block;font-size:26px}
+.stat{background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:14px;cursor:pointer;transition:background-color .18s ease,color .18s ease,transform .08s ease}.stat:active{background:#2563eb;color:#fff;transform:scale(.98)}.stat.drill-active{background:#dbeafe;border-color:#93c5fd}.stat b{display:block;font-size:26px}
 .status{padding:11px;border-radius:10px;background:#fff3cd;color:#664d03;margin:10px 0}.status.ok{background:#dcfce7;color:#166534}.status.bad{background:#fee2e2;color:#991b1b}
 .row{display:flex;gap:10px;align-items:center;justify-content:space-between}.row>*{min-width:0}
 .item-entry{border:1px dashed #cbd5e1;border-radius:12px;padding:13px;margin:12px 0}
@@ -83,10 +83,10 @@ details{margin-top:8px}summary{font-weight:700;cursor:pointer}h2,h3{margin-top:0
 
   <section id="dashboard" class="tab">
     <div class="stats">
-      <div class="stat"><span data-i18n="activeItems">Active items</span><b id="stItems">0</b></div>
-      <div class="stat"><span data-i18n="lowStock">Low stock</span><b id="stLow">0</b></div>
-      <div class="stat"><span data-i18n="issuedToday">Issued today</span><b id="stIssued">0</b></div>
-      <div class="stat"><span data-i18n="transactions">Transactions</span><b id="stTx">0</b></div>
+      <div class="stat" data-drill="active"><span data-i18n="activeItems">Active items</span><b id="stItems">0</b></div>
+      <div class="stat" data-drill="low"><span data-i18n="lowStock">Low stock</span><b id="stLow">0</b></div>
+      <div class="stat" data-drill="issuedToday"><span data-i18n="issuedToday">Issued today</span><b id="stIssued">0</b></div>
+      <div class="stat" data-drill="transactions"><span data-i18n="transactions">Transactions</span><b id="stTx">0</b></div>
     </div>
     <div class="grid">
       <div class="card"><h3 data-i18n="mostUsed">Most used items</h3><div id="mostUsed"></div></div>
@@ -198,6 +198,7 @@ const BASE="https://psqirjistwghakjnymtw.supabase.co", KEY="sb_publishable__QvK-
 let accessToken=localStorage.getItem("bp_access")||"", refreshToken=localStorage.getItem("bp_refresh")||"", userEmail=localStorage.getItem("bp_email")||"";
 let state={sites:[],items:[],movements:[],counts:[],openings:[],balances:[]}; let pollTimer=null;
 let currentRole="viewer";
+let dashboardDrill="all";
 let currentLang=localStorage.getItem("bp_lang")||"en"; let currentSite=localStorage.getItem("bp_site")||"all";
 const $=id=>document.getElementById(id);
 const T={
@@ -278,7 +279,7 @@ const bals=filteredBalances(),movs=filteredMovements();$("stItems").textContent=
 const usage={};movs.filter(m=>m.movement_type==="issue").forEach(m=>usage[m.item_id]=(usage[m.item_id]||0)+Number(m.quantity));$("mostUsed").innerHTML=Object.entries(usage).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([id,q],i)=>'<div class="row"><span>'+(i+1)+'. '+esc(itemName(id))+'</span><b>'+fmt(q)+'</b></div>').join("")||'<p class="muted">—</p>';
 $("attention").innerHTML=bals.filter(b=>b.low).slice(0,12).map(b=>'<div class="row"><span>'+esc(itemPrimary(b.item))+' • '+esc(siteName(b.site_id))+'</span><span class="pill low">'+fmt(b.expected)+' '+esc(b.item.unit)+'</span></div>').join("")||'<p class="muted">—</p>';
 renderInventory();renderHistory();renderCatalogueList();renderViewerLists();applyRoleUI();updateIssueBalance();updateCountExpected()}
-function renderInventory(){const q=($("invSearch").value||"").toLowerCase();const rows=filteredBalances().filter(b=>{const it=b.item;return [it.name,it.name_en,it.name_fr,it.name_zh,it.name_ln,it.item_code,it.part_number,it.machine_name_en,it.machine_name_fr,it.machine_name_zh,it.machine_name_ln,siteName(b.site_id)].join(" ").toLowerCase().includes(q)});$("invBody").innerHTML=rows.map(b=>{const it=b.item,alt=itemAlt(it),mach=machinePrimary(it),photo=it.photo_url?'<img class="photo-preview" src="'+esc(it.photo_url)+'">':"";return '<tr><td><div class="names"><b>'+esc(itemPrimary(it))+'</b>'+(alt?'<div class="alt">'+esc(alt)+'</div>':"")+(it.item_code?'<div class="alt">Code: '+esc(it.item_code)+'</div>':"")+(it.part_number?'<div class="alt">Part: '+esc(it.part_number)+'</div>':"")+(mach?'<div class="machine">Machine: '+esc(mach)+'</div>':"")+photo+'</div></td><td>'+esc(siteName(b.site_id))+'</td><td><b>'+fmt(b.expected)+' '+esc(it.unit)+'</b></td><td>'+fmt(b.received)+'</td><td>'+fmt(b.issued)+'</td><td>'+(b.physical===null?"—":fmt(b.physical))+'</td><td>'+(b.variance===null?"—":fmt(b.variance))+'</td><td><span class="pill '+(b.low?"low":"good")+'">'+(b.low?"LOW":"OK")+'</span></td></tr>'}).join("")||'<tr><td colspan="8" class="muted">No stock.</td></tr>'}
+function renderInventory(){const q=($("invSearch").value||"").toLowerCase();const rows=filteredBalances().filter(b=>dashboardDrill!=="low"||b.low).filter(b=>{const it=b.item;return [it.name,it.name_en,it.name_fr,it.name_zh,it.name_ln,it.item_code,it.part_number,it.machine_name_en,it.machine_name_fr,it.machine_name_zh,it.machine_name_ln,siteName(b.site_id)].join(" ").toLowerCase().includes(q)});$("invBody").innerHTML=rows.map(b=>{const it=b.item,alt=itemAlt(it),mach=machinePrimary(it),photo=it.photo_url?'<img class="photo-preview" src="'+esc(it.photo_url)+'">':"";return '<tr><td><div class="names"><b>'+esc(itemPrimary(it))+'</b>'+(alt?'<div class="alt">'+esc(alt)+'</div>':"")+(it.item_code?'<div class="alt">Code: '+esc(it.item_code)+'</div>':"")+(it.part_number?'<div class="alt">Part: '+esc(it.part_number)+'</div>':"")+(mach?'<div class="machine">Machine: '+esc(mach)+'</div>':"")+photo+'</div></td><td>'+esc(siteName(b.site_id))+'</td><td><b>'+fmt(b.expected)+' '+esc(it.unit)+'</b></td><td>'+fmt(b.received)+'</td><td>'+fmt(b.issued)+'</td><td>'+(b.physical===null?"—":fmt(b.physical))+'</td><td>'+(b.variance===null?"—":fmt(b.variance))+'</td><td><span class="pill '+(b.low?"low":"good")+'">'+(b.low?"LOW":"OK")+'</span></td></tr>'}).join("")||'<tr><td colspan="8" class="muted">No stock.</td></tr>'}
 $("invSearch").oninput=renderInventory;
 function renderHistory(){
   const f=$("histFilter").value;
@@ -414,6 +415,25 @@ $("iItem").onchange=$("iSite").onchange=updateIssueBalance;$("cItem").onchange=$
 $("issueForm").onsubmit=async e=>{e.preventDefault();const qty=Number($("iQty").value),b=getBalance($("iItem").value,$("iSite").value);if(!b)return note("No stock balance.");if(qty>b.expected)return note("Cannot issue more than remaining stock.");try{await rest("stock_movements",{method:"POST",prefer:"return=representation",body:{item_id:$("iItem").value,site_id:$("iSite").value,movement_type:"issue",quantity:qty,issued_by:$("iBy").value.trim(),taken_by:$("iTaken").value.trim(),purpose:$("iPurpose").value.trim()||null,notes:$("iNotes").value.trim()||null,occurred_at:isoLocal("iDate")}});e.target.reset();setDefaultDates();note("Issued ✓");await loadAll(false);showTab("inventory")}catch(err){note(err.message)}};
 $("countForm").onsubmit=async e=>{e.preventDefault();try{await rest("physical_counts",{method:"POST",prefer:"return=representation",body:{item_id:$("cItem").value,site_id:$("cSite").value,physical_quantity:Number($("cQty").value),counted_by:$("cBy").value.trim(),notes:$("cNotes").value.trim()||null,counted_at:isoLocal("cDate")}});e.target.reset();setDefaultDates();note("Count saved ✓");await loadAll(false);showTab("inventory")}catch(err){note(err.message)}};
 $("siteForm").onsubmit=async e=>{e.preventDefault();try{await rest("sites",{method:"POST",prefer:"return=representation",body:{name:$("siteName").value.trim(),code:$("siteCode").value.trim()||null}});e.target.reset();note("Site added ✓");await loadAll(false)}catch(err){note(err.message)}};
+function clearDashboardDrillHighlight(){document.querySelectorAll(".stat[data-drill]").forEach(x=>x.classList.remove("drill-active"))}
+function drillDashboard(kind,card){
+  clearDashboardDrillHighlight(); if(card)card.classList.add("drill-active");
+  if(kind==="active"){
+    dashboardDrill="all"; $("invSearch").value=""; renderInventory(); showTab("inventory");
+  }else if(kind==="low"){
+    dashboardDrill="low"; $("invSearch").value=""; renderInventory(); showTab("inventory");
+  }else if(kind==="issuedToday"){
+    dashboardDrill="all"; $("histFilter").value="issue"; renderHistory(); showTab("history");
+  }else if(kind==="transactions"){
+    dashboardDrill="all"; $("histFilter").value="all"; renderHistory(); showTab("history");
+  }
+}
+document.querySelectorAll(".stat[data-drill]").forEach(card=>{
+  card.setAttribute("role","button"); card.setAttribute("tabindex","0");
+  card.addEventListener("click",()=>drillDashboard(card.dataset.drill,card));
+  card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();drillDashboard(card.dataset.drill,card)}});
+});
+
 boot();
 </script>
 </body></html>
