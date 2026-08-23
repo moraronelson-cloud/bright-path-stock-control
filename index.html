@@ -6,537 +6,259 @@
 <meta name="theme-color" content="#0f172a">
 <title>Bright Path Stock Control</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#172033}
-header{background:#0f172a;color:#fff;padding:20px 18px;position:sticky;top:0;z-index:30}
-header h1{margin:0;font-size:24px} header p{margin:5px 0 0;color:#cbd5e1}
-.wrap{max-width:1100px;margin:auto;padding:14px}
-.card{background:#fff;border:1px solid #e2e8f0;border-radius:15px;padding:16px;margin:12px 0}
-.hidden{display:none!important}.muted{color:#64748b}.small{font-size:13px}.danger{color:#b91c1c}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-@media(max-width:720px){.grid,.grid3{grid-template-columns:1fr}}
-label{display:block;font-weight:700;margin:10px 0 5px}
-input,select,textarea{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:9px;font-size:16px;background:#fff}
-button{border:0;border-radius:9px;padding:12px 14px;background:#0f172a;color:white;font-weight:700;font-size:15px}
-button.secondary{background:#e8edf3;color:#172033}
-button.dangerBtn{background:#991b1b}
-button:disabled{opacity:.55}
-.auth{max-width:430px;margin:35px auto}
-.tabs{display:flex;gap:8px;overflow:auto;position:sticky;top:78px;background:#f4f6f8;padding:10px 0;z-index:20}
-.tabs button{white-space:nowrap}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-@media(max-width:720px){.stats{grid-template-columns:1fr 1fr}}
-.stat{background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:14px}
-.stat b{display:block;font-size:26px;margin-top:4px}
-.status{padding:11px 12px;border-radius:10px;background:#fff3cd;color:#664d03;margin:10px 0}
-.status.ok{background:#dcfce7;color:#166534}.status.bad{background:#fee2e2;color:#991b1b}
+*{box-sizing:border-box} body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#172033}
+header{background:#0f172a;color:#fff;padding:18px;position:sticky;top:0;z-index:30}
+header h1{margin:0;font-size:24px} header p{margin:4px 0 0;color:#cbd5e1}
+.wrap{max-width:1120px;margin:auto;padding:14px}.card{background:#fff;border:1px solid #e2e8f0;border-radius:15px;padding:16px;margin:12px 0}
+.hidden{display:none!important}.muted{color:#64748b}.small{font-size:13px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}@media(max-width:760px){.grid,.grid3{grid-template-columns:1fr}}
+label{display:block;font-weight:700;margin:10px 0 5px}input,select,textarea{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:9px;font-size:16px;background:#fff}
+button{border:0;border-radius:9px;padding:12px 14px;background:#0f172a;color:#fff;font-weight:700;font-size:15px}button.secondary{background:#e8edf3;color:#172033}button:disabled{opacity:.55}
+.auth{max-width:430px;margin:30px auto}.toolbar{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end}@media(max-width:700px){.toolbar{grid-template-columns:1fr 1fr}.toolbar .who{grid-column:1/-1}}
+.tabs{display:flex;gap:8px;overflow:auto;position:sticky;top:76px;background:#f4f6f8;padding:10px 0;z-index:20}.tabs button{white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}@media(max-width:700px){.stats{grid-template-columns:1fr 1fr}}
+.stat{background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:14px}.stat b{display:block;font-size:26px}
+.status{padding:11px;border-radius:10px;background:#fff3cd;color:#664d03;margin:10px 0}.status.ok{background:#dcfce7;color:#166534}.status.bad{background:#fee2e2;color:#991b1b}
 .row{display:flex;gap:10px;align-items:center;justify-content:space-between}.row>*{min-width:0}
 .item-entry{border:1px dashed #cbd5e1;border-radius:12px;padding:13px;margin:12px 0}
-.scroll{overflow:auto}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:9px 7px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top}
-.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef2f7;font-size:12px}
-.low{background:#fee2e2;color:#991b1b}.good{background:#dcfce7;color:#166534}
+.scroll{overflow:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:9px 7px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top}
+.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef2f7;font-size:12px}.low{background:#fee2e2;color:#991b1b}.good{background:#dcfce7;color:#166534}
 .notice{position:fixed;bottom:14px;left:12px;right:12px;max-width:650px;margin:auto;background:#111827;color:#fff;padding:12px 14px;border-radius:10px;display:none;z-index:100}
 .photo-preview{max-width:90px;max-height:70px;border-radius:8px;border:1px solid #e5e7eb;margin-top:6px}
-h2,h3{margin-top:0}
+.names{line-height:1.35}.names b{display:block}.alt{color:#64748b;font-size:12px}.machine{font-size:12px;color:#475569;margin-top:4px}
+details{margin-top:8px}summary{font-weight:700;cursor:pointer}h2,h3{margin-top:0}
 </style>
 </head>
 <body>
 <header>
   <h1>BRIGHT PATH</h1>
-  <p>Shared Stock Control • BL3 and other sites</p>
+  <p data-i18n="subtitle">Shared Stock Control</p>
 </header>
 <div class="wrap">
-
 <section id="authBox" class="auth card">
-  <h2>Sign in</h2>
-  <p class="muted">Authorized users share the same live stock database.</p>
+  <h2 data-i18n="signin">Sign in</h2>
   <div id="authStatus" class="status">Ready.</div>
-  <label>Email</label><input id="authEmail" type="email" autocomplete="email">
-  <label>Password</label><input id="authPassword" type="password" autocomplete="current-password">
-  <button type="button" id="signInBtn">Sign in</button>
-  <button type="button" id="createAccountBtn" class="secondary" style="margin-top:8px">Create account</button>
-  <p class="small muted">If email confirmation is temporarily rate-limited, the account may still be created in Supabase and can be confirmed by an administrator.</p>
+  <label data-i18n="email">Email</label><input id="authEmail" type="email">
+  <label data-i18n="password">Password</label><input id="authPassword" type="password">
+  <button type="button" id="signInBtn" data-i18n="signin">Sign in</button>
+  <button type="button" id="createAccountBtn" class="secondary" style="margin-top:8px" data-i18n="createAccount">Create account</button>
 </section>
 
 <section id="appBox" class="hidden">
-  <div class="card row">
-    <div>
+  <div class="card toolbar">
+    <div class="who">
       <b id="loggedInAs"></b>
       <div id="syncStatus" class="small muted">Loading…</div>
     </div>
-    <div style="display:flex;gap:8px">
-      <button type="button" id="refreshBtn" class="secondary">Refresh</button>
-      <button type="button" id="signOutBtn" class="secondary">Sign out</button>
+    <div>
+      <label data-i18n="language">Language</label>
+      <select id="languageSelect">
+        <option value="en">English</option><option value="fr">Français</option><option value="zh">中文</option><option value="ln">Lingala</option>
+      </select>
     </div>
+    <div>
+      <label data-i18n="siteView">Site view</label>
+      <select id="globalSiteFilter"><option value="all">All Sites</option></select>
+    </div>
+  </div>
+  <div class="row" style="margin:8px 0">
+    <button type="button" id="refreshBtn" class="secondary" data-i18n="refresh">Refresh</button>
+    <button type="button" id="signOutBtn" class="secondary" data-i18n="signout">Sign out</button>
   </div>
 
   <div class="tabs">
-    <button type="button" data-tab="dashboard">Dashboard</button>
-    <button type="button" data-tab="addItems">Add Items</button>
-    <button type="button" data-tab="receive">Receive</button>
-    <button type="button" data-tab="issue">Issue</button>
-    <button type="button" data-tab="count">Count</button>
-    <button type="button" data-tab="inventory">Inventory</button>
-    <button type="button" data-tab="history">History</button>
-    <button type="button" data-tab="sites">Sites</button>
+    <button type="button" data-tab="dashboard" data-i18n="dashboard">Dashboard</button>
+    <button type="button" data-tab="catalogue" data-i18n="catalogue">Item Catalogue</button>
+    <button type="button" data-tab="opening" data-i18n="openingStock">Opening Stock</button>
+    <button type="button" data-tab="receive" data-i18n="receive">Receive</button>
+    <button type="button" data-tab="issue" data-i18n="issue">Issue</button>
+    <button type="button" data-tab="count" data-i18n="count">Count</button>
+    <button type="button" data-tab="inventory" data-i18n="inventory">Inventory</button>
+    <button type="button" data-tab="history" data-i18n="history">History</button>
+    <button type="button" data-tab="sites" data-i18n="sites">Sites</button>
   </div>
 
   <section id="dashboard" class="tab">
     <div class="stats">
-      <div class="stat">Active items<b id="stItems">0</b></div>
-      <div class="stat">Low stock<b id="stLow">0</b></div>
-      <div class="stat">Issued today<b id="stIssued">0</b></div>
-      <div class="stat">Transactions<b id="stTx">0</b></div>
+      <div class="stat"><span data-i18n="activeItems">Active items</span><b id="stItems">0</b></div>
+      <div class="stat"><span data-i18n="lowStock">Low stock</span><b id="stLow">0</b></div>
+      <div class="stat"><span data-i18n="issuedToday">Issued today</span><b id="stIssued">0</b></div>
+      <div class="stat"><span data-i18n="transactions">Transactions</span><b id="stTx">0</b></div>
     </div>
     <div class="grid">
-      <div class="card"><h3>Most used items</h3><div id="mostUsed"></div></div>
-      <div class="card"><h3>Needs attention</h3><div id="attention"></div></div>
+      <div class="card"><h3 data-i18n="mostUsed">Most used items</h3><div id="mostUsed"></div></div>
+      <div class="card"><h3 data-i18n="attention">Needs attention</h3><div id="attention"></div></div>
     </div>
   </section>
 
-  <section id="addItems" class="tab hidden">
+  <section id="catalogue" class="tab hidden">
     <div class="card">
-      <h2>Initial Stock Count / Add Items</h2>
-      <p class="muted">Start typing an item name and the next blank item appears automatically. Add as many as you need.</p>
-      <form id="itemsForm">
-        <div id="itemRows"></div>
-        <button type="submit">Save Items</button>
+      <h2 data-i18n="catalogue">Item Catalogue</h2>
+      <p class="muted" data-i18n="catalogueHelp">Create each item once. At least one item name and the unit are required. Everything else is optional.</p>
+      <form id="itemsForm"><div id="itemRows"></div><button type="submit" data-i18n="saveItems">Save Items</button></form>
+    </div>
+  </section>
+
+  <section id="opening" class="tab hidden">
+    <div class="card">
+      <h2 data-i18n="openingStock">Opening / Existing Stock</h2>
+      <p class="muted" data-i18n="openingHelp">Use this for stock that already existed before you started recording it. You can enter it later and choose the correct as-of date.</p>
+      <form id="openingForm">
+        <label data-i18n="item">Item</label><select id="oItem" required></select>
+        <div class="grid">
+          <div><label data-i18n="site">Site</label><select id="oSite" required></select></div>
+          <div><label data-i18n="quantity">Quantity</label><input id="oQty" type="number" min="0" step="0.01" required></div>
+        </div>
+        <div class="grid">
+          <div><label data-i18n="asOfDate">As-of date</label><input id="oDate" type="date" required></div>
+          <div><label data-i18n="recordedBy">Recorded by</label><input id="oBy"></div>
+        </div>
+        <label data-i18n="notes">Notes</label><textarea id="oNotes" rows="2"></textarea>
+        <button type="submit" data-i18n="saveOpening">Save Opening Stock</button>
       </form>
     </div>
   </section>
 
   <section id="receive" class="tab hidden">
     <div class="card">
-      <h2>Receive Stock</h2>
+      <h2 data-i18n="receive">Receive Stock</h2>
       <form id="receiveForm">
-        <label>Item</label><select id="rItem" required></select>
-        <div class="grid">
-          <div><label>Quantity received</label><input id="rQty" type="number" min="0.01" step="0.01" required></div>
-          <div><label>Site</label><select id="rSite" required></select></div>
-        </div>
-        <div class="grid">
-          <div><label>Received by</label><input id="rBy" required></div>
-          <div><label>Delivered by / source</label><input id="rSource"></div>
-        </div>
-        <label>Reference / delivery note</label><input id="rRef">
-        <label>Notes</label><textarea id="rNotes" rows="2"></textarea>
-        <button type="submit">Save Receipt</button>
+        <label data-i18n="item">Item</label><select id="rItem" required></select>
+        <div class="grid"><div><label data-i18n="quantity">Quantity</label><input id="rQty" type="number" min="0.01" step="0.01" required></div><div><label data-i18n="site">Site</label><select id="rSite" required></select></div></div>
+        <div class="grid"><div><label data-i18n="receivedBy">Received by</label><input id="rBy" required></div><div><label data-i18n="source">Delivered by / source</label><input id="rSource"></div></div>
+        <label data-i18n="dateReceived">Date received</label><input id="rDate" type="datetime-local">
+        <label data-i18n="reference">Reference / delivery note</label><input id="rRef">
+        <label data-i18n="notes">Notes</label><textarea id="rNotes" rows="2"></textarea>
+        <button type="submit" data-i18n="saveReceipt">Save Receipt</button>
       </form>
     </div>
   </section>
 
   <section id="issue" class="tab hidden">
     <div class="card">
-      <h2>Issue Stock</h2>
+      <h2 data-i18n="issue">Issue Stock</h2>
       <form id="issueForm">
-        <label>Item</label><select id="iItem" required></select>
-        <div class="grid">
-          <div><label>Quantity issued</label><input id="iQty" type="number" min="0.01" step="0.01" required></div>
-          <div><label>Site</label><select id="iSite" required></select></div>
-        </div>
-        <div id="issueBalance" class="status">Select item and site to see stock remaining.</div>
-        <div class="grid">
-          <div><label>Issued by</label><input id="iBy" required></div>
-          <div><label>Taken / received by</label><input id="iTaken" required></div>
-        </div>
-        <label>Used for / machine / department</label><input id="iPurpose">
-        <label>Notes</label><textarea id="iNotes" rows="2"></textarea>
-        <button type="submit">Save Issue</button>
+        <label data-i18n="item">Item</label><select id="iItem" required></select>
+        <div class="grid"><div><label data-i18n="quantity">Quantity</label><input id="iQty" type="number" min="0.01" step="0.01" required></div><div><label data-i18n="site">Site</label><select id="iSite" required></select></div></div>
+        <div id="issueBalance" class="status">Select item and site.</div>
+        <div class="grid"><div><label data-i18n="issuedBy">Issued by</label><input id="iBy" required></div><div><label data-i18n="takenBy">Taken / received by</label><input id="iTaken" required></div></div>
+        <label data-i18n="dateIssued">Date issued</label><input id="iDate" type="datetime-local">
+        <label data-i18n="purpose">Used for / machine / department</label><input id="iPurpose">
+        <label data-i18n="notes">Notes</label><textarea id="iNotes" rows="2"></textarea>
+        <button type="submit" data-i18n="saveIssue">Save Issue</button>
       </form>
     </div>
   </section>
 
   <section id="count" class="tab hidden">
     <div class="card">
-      <h2>Physical Stock Count</h2>
+      <h2 data-i18n="count">Physical Count</h2>
       <form id="countForm">
-        <label>Item</label><select id="cItem" required></select>
-        <div class="grid">
-          <div><label>Physical quantity counted</label><input id="cQty" type="number" min="0" step="0.01" required></div>
-          <div><label>Site</label><select id="cSite" required></select></div>
-        </div>
-        <div id="countExpected" class="status">Select item and site to compare expected stock.</div>
-        <label>Counted by</label><input id="cBy" required>
-        <label>Notes / explanation for variance</label><textarea id="cNotes" rows="2"></textarea>
-        <button type="submit">Save Physical Count</button>
+        <label data-i18n="item">Item</label><select id="cItem" required></select>
+        <div class="grid"><div><label data-i18n="physicalQty">Physical quantity</label><input id="cQty" type="number" min="0" step="0.01" required></div><div><label data-i18n="site">Site</label><select id="cSite" required></select></div></div>
+        <div id="countExpected" class="status">Select item and site.</div>
+        <div class="grid"><div><label data-i18n="countedBy">Counted by</label><input id="cBy" required></div><div><label data-i18n="countDate">Count date</label><input id="cDate" type="datetime-local"></div></div>
+        <label data-i18n="notes">Notes</label><textarea id="cNotes" rows="2"></textarea>
+        <button type="submit" data-i18n="saveCount">Save Physical Count</button>
       </form>
     </div>
   </section>
 
   <section id="inventory" class="tab hidden">
     <div class="card">
-      <div class="row">
-        <div><h2>Current Inventory</h2><p class="muted">Expected balance = opening stock + receipts − issues.</p></div>
-        <input id="invSearch" placeholder="Search item / site / location" style="max-width:330px">
-      </div>
-      <div class="scroll">
-        <table>
-          <thead><tr><th>Item</th><th>Site</th><th>Expected</th><th>Received</th><th>Issued</th><th>Physical</th><th>Variance</th><th>Status</th></tr></thead>
-          <tbody id="invBody"></tbody>
-        </table>
-      </div>
+      <div class="row"><div><h2 data-i18n="inventory">Current Inventory</h2><p class="muted" data-i18n="inventoryHelp">All Sites shows every site. Choose a site above to filter this page and the dashboard.</p></div><input id="invSearch" placeholder="Search"></div>
+      <div class="scroll"><table>
+        <thead><tr><th data-i18n="item">Item</th><th data-i18n="site">Site</th><th data-i18n="expected">Expected</th><th data-i18n="received">Received</th><th data-i18n="issued">Issued</th><th data-i18n="physical">Physical</th><th data-i18n="variance">Variance</th><th data-i18n="status">Status</th></tr></thead>
+        <tbody id="invBody"></tbody>
+      </table></div>
     </div>
   </section>
 
-  <section id="history" class="tab hidden">
-    <div class="card">
-      <div class="row"><h2>Transaction History</h2>
-        <select id="histFilter" style="max-width:220px"><option value="all">All</option><option value="receive">Received</option><option value="issue">Issued</option></select>
-      </div>
-      <div id="historyList"></div>
-    </div>
-  </section>
+  <section id="history" class="tab hidden"><div class="card"><div class="row"><h2 data-i18n="history">History</h2><select id="histFilter"><option value="all">All</option><option value="opening">Opening</option><option value="receive">Received</option><option value="issue">Issued</option></select></div><div id="historyList"></div></div></section>
 
   <section id="sites" class="tab hidden">
-    <div class="card">
-      <h2>Sites</h2>
-      <form id="siteForm">
-        <div class="grid">
-          <div><label>Site name</label><input id="siteName" placeholder="e.g. BL4" required></div>
-          <div><label>Code</label><input id="siteCode" placeholder="e.g. BL4"></div>
-        </div>
-        <button type="submit">Add Site</button>
-      </form>
-      <div id="siteList" style="margin-top:15px"></div>
-    </div>
+    <div class="card"><h2 data-i18n="sites">Sites</h2><form id="siteForm"><div class="grid"><div><label data-i18n="siteName">Site name</label><input id="siteName" required></div><div><label data-i18n="code">Code</label><input id="siteCode"></div></div><button type="submit" data-i18n="addSite">Add Site</button></form><div id="siteList" style="margin-top:15px"></div></div>
   </section>
 </section>
 </div>
 <div id="notice" class="notice"></div>
 
 <script>
-const BASE = "https://psqirjistwghakjnymtw.supabase.co";
-const KEY = "sb_publishable__QvK-7cNWqUsfDkAOJiYGQ_O4Ub_vj0";
-let accessToken = localStorage.getItem("bp_access") || "";
-let refreshToken = localStorage.getItem("bp_refresh") || "";
-let userEmail = localStorage.getItem("bp_email") || "";
-let state = {sites:[],items:[],movements:[],counts:[],balances:[]};
-let pollTimer = null;
-
-const $ = id => document.getElementById(id);
-function note(msg){ const n=$("notice"); n.textContent=msg; n.style.display="block"; setTimeout(()=>n.style.display="none",2600); }
-function setAuthStatus(msg,kind=""){ const e=$("authStatus"); e.textContent=msg; e.className="status"+(kind?" "+kind:""); }
-function showTab(id){ document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden")); $(id).classList.remove("hidden"); }
+const BASE="https://psqirjistwghakjnymtw.supabase.co", KEY="sb_publishable__QvK-7cNWqUsfDkAOJiYGQ_O4Ub_vj0";
+let accessToken=localStorage.getItem("bp_access")||"", refreshToken=localStorage.getItem("bp_refresh")||"", userEmail=localStorage.getItem("bp_email")||"";
+let state={sites:[],items:[],movements:[],counts:[],openings:[],balances:[]}; let pollTimer=null;
+let currentLang=localStorage.getItem("bp_lang")||"en"; let currentSite=localStorage.getItem("bp_site")||"all";
+const $=id=>document.getElementById(id);
+const T={
+en:{subtitle:"Shared Stock Control",signin:"Sign in",email:"Email",password:"Password",createAccount:"Create account",language:"Language",siteView:"Site view",refresh:"Refresh",signout:"Sign out",dashboard:"Dashboard",catalogue:"Item Catalogue",openingStock:"Opening Stock",receive:"Receive",issue:"Issue",count:"Count",inventory:"Inventory",history:"History",sites:"Sites",activeItems:"Active items",lowStock:"Low stock",issuedToday:"Issued today",transactions:"Transactions",mostUsed:"Most used items",attention:"Needs attention",catalogueHelp:"Create each item once. At least one item name and the unit are required. Everything else is optional.",saveItems:"Save Items",openingHelp:"Use this for stock that already existed before you started recording it. You can enter it later and choose the correct as-of date.",item:"Item",site:"Site",quantity:"Quantity",asOfDate:"As-of date",recordedBy:"Recorded by",notes:"Notes",saveOpening:"Save Opening Stock",receivedBy:"Received by",source:"Delivered by / source",dateReceived:"Date received",reference:"Reference / delivery note",saveReceipt:"Save Receipt",issuedBy:"Issued by",takenBy:"Taken / received by",dateIssued:"Date issued",purpose:"Used for / machine / department",saveIssue:"Save Issue",physicalQty:"Physical quantity",countedBy:"Counted by",countDate:"Count date",saveCount:"Save Physical Count",inventoryHelp:"All Sites shows every site. Choose a site above to filter this page and the dashboard.",expected:"Expected",received:"Received",issued:"Issued",physical:"Physical",variance:"Variance",status:"Status",siteName:"Site name",code:"Code",addSite:"Add Site"},
+fr:{subtitle:"Contrôle partagé des stocks",signin:"Se connecter",email:"E-mail",password:"Mot de passe",createAccount:"Créer un compte",language:"Langue",siteView:"Vue du site",refresh:"Actualiser",signout:"Déconnexion",dashboard:"Tableau de bord",catalogue:"Catalogue des articles",openingStock:"Stock initial",receive:"Réception",issue:"Sortie",count:"Comptage",inventory:"Inventaire",history:"Historique",sites:"Sites",activeItems:"Articles actifs",lowStock:"Stock faible",issuedToday:"Sorti aujourd'hui",transactions:"Transactions",mostUsed:"Articles les plus utilisés",attention:"À surveiller",catalogueHelp:"Créez chaque article une seule fois. Au moins un nom et l’unité sont obligatoires. Tout le reste est facultatif.",saveItems:"Enregistrer les articles",openingHelp:"Utilisez ceci pour le stock qui existait déjà avant l’enregistrement. Vous pouvez l’ajouter plus tard avec la bonne date.",item:"Article",site:"Site",quantity:"Quantité",asOfDate:"Date de référence",recordedBy:"Enregistré par",notes:"Notes",saveOpening:"Enregistrer le stock initial",receivedBy:"Reçu par",source:"Livré par / source",dateReceived:"Date de réception",reference:"Référence / bon de livraison",saveReceipt:"Enregistrer la réception",issuedBy:"Sorti par",takenBy:"Pris / reçu par",dateIssued:"Date de sortie",purpose:"Utilisé pour / machine / département",saveIssue:"Enregistrer la sortie",physicalQty:"Quantité physique",countedBy:"Compté par",countDate:"Date du comptage",saveCount:"Enregistrer le comptage",inventoryHelp:"Tous les sites affiche tous les sites. Choisissez un site ci-dessus pour filtrer l’inventaire et le tableau de bord.",expected:"Théorique",received:"Reçu",issued:"Sorti",physical:"Physique",variance:"Écart",status:"Statut",siteName:"Nom du site",code:"Code",addSite:"Ajouter un site"},
+zh:{subtitle:"共享库存管理",signin:"登录",email:"邮箱",password:"密码",createAccount:"创建账户",language:"语言",siteView:"站点视图",refresh:"刷新",signout:"退出登录",dashboard:"仪表板",catalogue:"物品目录",openingStock:"期初库存",receive:"入库",issue:"出库",count:"盘点",inventory:"库存",history:"历史记录",sites:"站点",activeItems:"有效物品",lowStock:"低库存",issuedToday:"今日出库",transactions:"交易记录",mostUsed:"最常用物品",attention:"需要关注",catalogueHelp:"每个物品只创建一次。至少填写一种物品名称和单位，其余均为可选。",saveItems:"保存物品",openingHelp:"用于录入系统启用前已经存在的库存。以后也可以补录，并选择正确的日期。",item:"物品",site:"站点",quantity:"数量",asOfDate:"截至日期",recordedBy:"记录人",notes:"备注",saveOpening:"保存期初库存",receivedBy:"收货人",source:"送货人 / 来源",dateReceived:"收货日期",reference:"参考 / 送货单",saveReceipt:"保存入库",issuedBy:"发出人",takenBy:"领取 / 接收人",dateIssued:"出库日期",purpose:"用途 / 机器 / 部门",saveIssue:"保存出库",physicalQty:"实际数量",countedBy:"盘点人",countDate:"盘点日期",saveCount:"保存盘点",inventoryHelp:"“所有站点”显示全部站点。选择上方站点可筛选库存和仪表板。",expected:"账面",received:"入库",issued:"出库",physical:"实盘",variance:"差异",status:"状态",siteName:"站点名称",code:"代码",addSite:"添加站点"},
+ln:{subtitle:"Bokambi ya stock ya bisika nyonso",signin:"Kokota",email:"Email",password:"Mot de passe",createAccount:"Kosala compte",language:"Lokota",siteView:"Tala site",refresh:"Zongisa sika",signout:"Kobima",dashboard:"Tableau",catalogue:"Liste ya biloko",openingStock:"Stock ya ebandeli",receive:"Koyamba stock",issue:"Kobimisa stock",count:"Kotanga",inventory:"Stock",history:"Lisolo",sites:"Bisika",activeItems:"Biloko ezali",lowStock:"Stock moke",issuedToday:"Ebimi lelo",transactions:"Mouvements",mostUsed:"Biloko esalelami mingi",attention:"Esengeli kotala",catalogueHelp:"Salá article mbala moko. Nkombo moko mpe unité nde esengeli. Makambo mosusu nyonso ezali optionnel.",saveItems:"Bomba biloko",openingHelp:"Salelá oyo mpo na stock oyo ezalaki déjà liboso ya système. Okoki kobakisa yango sima na date ya solo.",item:"Eloko",site:"Site",quantity:"Motango",asOfDate:"Date ya stock",recordedBy:"Akomaki nani",notes:"Notes",saveOpening:"Bomba stock ya ebandeli",receivedBy:"Ayambaki nani",source:"Eutaki wapi",dateReceived:"Date ya koyamba",reference:"Référence",saveReceipt:"Bomba réception",issuedBy:"Abimisaki nani",takenBy:"Azwi nani",dateIssued:"Date ya kobimisa",purpose:"Mpo na nini / machine / département",saveIssue:"Bomba sortie",physicalQty:"Motango ya solo",countedBy:"Atangaki nani",countDate:"Date ya kotanga",saveCount:"Bomba comptage",inventoryHelp:"All Sites elakisaka bisika nyonso. Pona site likolo mpo na filtre.",expected:"Esengeli kozala",received:"Eyambe",issued:"Ebimi",physical:"Ya solo",variance:"Bokeseni",status:"Etat",siteName:"Nkombo ya site",code:"Code",addSite:"Bakisa site"}};
+function tr(k){return (T[currentLang]&&T[currentLang][k])||T.en[k]||k}
+function applyLanguage(){document.documentElement.lang=currentLang;document.querySelectorAll("[data-i18n]").forEach(e=>e.textContent=tr(e.dataset.i18n));renderAll()}
+function note(msg){const n=$("notice");n.textContent=msg;n.style.display="block";setTimeout(()=>n.style.display="none",2800)}
+function showTab(id){document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));$(id).classList.remove("hidden")}
 document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+async function authReq(path,body){const r=await fetch(BASE+path,{method:body?"POST":"GET",headers:{"apikey":KEY,"Authorization":"Bearer "+KEY,"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});const tx=await r.text();let d;try{d=JSON.parse(tx)}catch{d=tx}if(!r.ok)throw new Error((d&&d.msg)||(d&&d.message)||(d&&d.error_description)||(d&&d.error)||("HTTP "+r.status));return d}
+async function refreshSession(){if(!refreshToken)return false;try{const d=await authReq("/auth/v1/token?grant_type=refresh_token",{refresh_token:refreshToken});accessToken=d.access_token;refreshToken=d.refresh_token||refreshToken;localStorage.setItem("bp_access",accessToken);localStorage.setItem("bp_refresh",refreshToken);return true}catch{return false}}
+async function authedFetch(url,opts={}){if(!accessToken)throw new Error("Not signed in");const h=Object.assign({"apikey":KEY,"Authorization":"Bearer "+accessToken},opts.headers||{});let r=await fetch(url,Object.assign({},opts,{headers:h}));if(r.status===401&&await refreshSession()){h.Authorization="Bearer "+accessToken;r=await fetch(url,Object.assign({},opts,{headers:h}))}return r}
+async function rest(table,{method="GET",query="",body=null,prefer=""}={}){const h={"Content-Type":"application/json"};if(prefer)h.Prefer=prefer;const r=await authedFetch(BASE+"/rest/v1/"+table+(query?"?"+query:""),{method,headers:h,body:body?JSON.stringify(body):undefined});const tx=await r.text();let d;try{d=tx?JSON.parse(tx):null}catch{d=tx}if(!r.ok)throw new Error((d&&d.message)||(d&&d.details)||("HTTP "+r.status));return d}
+async function currentUser(){if(!accessToken)return null;const r=await authedFetch(BASE+"/auth/v1/user");return r.ok?await r.json():null}
+function saveSession(d,email){accessToken=d.access_token;refreshToken=d.refresh_token||"";userEmail=d.user?.email||email;localStorage.setItem("bp_access",accessToken);localStorage.setItem("bp_refresh",refreshToken);localStorage.setItem("bp_email",userEmail)}
+function clearSession(){accessToken=refreshToken=userEmail="";["bp_access","bp_refresh","bp_email"].forEach(k=>localStorage.removeItem(k))}
+$("signInBtn").onclick=async()=>{try{const d=await authReq("/auth/v1/token?grant_type=password",{email:$("authEmail").value.trim(),password:$("authPassword").value});saveSession(d,$("authEmail").value.trim());await enterApp()}catch(e){$("authStatus").textContent=e.message;$("authStatus").className="status bad"}}
+$("createAccountBtn").onclick=async()=>{try{const d=await authReq("/auth/v1/signup",{email:$("authEmail").value.trim(),password:$("authPassword").value});$("authStatus").textContent=d.access_token?"Account created ✓":"Account created. Confirmation may be required.";if(d.access_token){saveSession(d,$("authEmail").value.trim());await enterApp()}}catch(e){$("authStatus").textContent=e.message;$("authStatus").className="status bad"}}
+$("signOutBtn").onclick=()=>{clearSession();location.reload()};$("refreshBtn").onclick=()=>loadAll(true);
+$("languageSelect").value=currentLang;$("languageSelect").onchange=()=>{currentLang=$("languageSelect").value;localStorage.setItem("bp_lang",currentLang);applyLanguage()};
+$("globalSiteFilter").onchange=()=>{currentSite=$("globalSiteFilter").value;localStorage.setItem("bp_site",currentSite);renderAll()};
 
-async function authReq(path, body){
-  const r = await fetch(BASE+path,{
-    method: body ? "POST":"GET",
-    headers: {"apikey":KEY,"Authorization":"Bearer "+KEY,"Content-Type":"application/json"},
-    body: body ? JSON.stringify(body):undefined
-  });
-  const text=await r.text(); let data; try{data=JSON.parse(text)}catch{data=text}
-  if(!r.ok) throw new Error((data&&data.msg)||(data&&data.message)||(data&&data.error_description)||(data&&data.error)||("HTTP "+r.status));
-  return data;
-}
-async function refreshSession(){
-  if(!refreshToken) return false;
-  try{
-    const d=await authReq("/auth/v1/token?grant_type=refresh_token",{refresh_token:refreshToken});
-    accessToken=d.access_token; refreshToken=d.refresh_token || refreshToken;
-    localStorage.setItem("bp_access",accessToken); localStorage.setItem("bp_refresh",refreshToken);
-    return true;
-  }catch(e){ return false; }
-}
-async function authedFetch(url, opts={}){
-  if(!accessToken) throw new Error("Not signed in");
-  const headers=Object.assign({"apikey":KEY,"Authorization":"Bearer "+accessToken},opts.headers||{});
-  let r=await fetch(url,Object.assign({},opts,{headers}));
-  if(r.status===401 && await refreshSession()){
-    headers["Authorization"]="Bearer "+accessToken;
-    r=await fetch(url,Object.assign({},opts,{headers}));
-  }
-  return r;
-}
-async function rest(table, {method="GET", query="", body=null, prefer=""}={}){
-  const headers={"Content-Type":"application/json"};
-  if(prefer) headers["Prefer"]=prefer;
-  const r=await authedFetch(BASE+"/rest/v1/"+table+(query?("?"+query):""),{method,headers,body:body?JSON.stringify(body):undefined});
-  const text=await r.text(); let data; try{data=text?JSON.parse(text):null}catch{data=text}
-  if(!r.ok) throw new Error((data&&data.message)||(data&&data.details)||("HTTP "+r.status));
-  return data;
-}
-async function currentUser(){
-  if(!accessToken) return null;
-  const r=await authedFetch(BASE+"/auth/v1/user");
-  if(!r.ok) return null;
-  return await r.json();
-}
-function saveSession(d,email){
-  accessToken=d.access_token; refreshToken=d.refresh_token||"";
-  userEmail=d.user?.email||email;
-  localStorage.setItem("bp_access",accessToken); localStorage.setItem("bp_refresh",refreshToken); localStorage.setItem("bp_email",userEmail);
-}
-function clearSession(){ accessToken="";refreshToken="";userEmail=""; localStorage.removeItem("bp_access");localStorage.removeItem("bp_refresh");localStorage.removeItem("bp_email"); }
+async function enterApp(){$("authBox").classList.add("hidden");$("appBox").classList.remove("hidden");$("loggedInAs").textContent=userEmail;resetItemRows();setDefaultDates();await loadAll(true);if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(()=>loadAll(false),15000);applyLanguage()}
+async function boot(){if(accessToken){let u=await currentUser();if(!u&&await refreshSession())u=await currentUser();if(u){userEmail=u.email||userEmail;await enterApp();return}clearSession()}$("authBox").classList.remove("hidden");applyLanguage()}
+function setDefaultDates(){const now=new Date(),off=now.getTimezoneOffset(),local=new Date(now.getTime()-off*60000).toISOString().slice(0,16);["rDate","iDate","cDate"].forEach(id=>$(id).value=local);$("oDate").value=now.toISOString().slice(0,10)}
 
-$("signInBtn").addEventListener("click",async()=>{
-  const email=$("authEmail").value.trim(), password=$("authPassword").value;
-  if(!email||!password) return setAuthStatus("Enter email and password.","bad");
-  try{
-    setAuthStatus("Signing in…");
-    const d=await authReq("/auth/v1/token?grant_type=password",{email,password});
-    saveSession(d,email); setAuthStatus("Sign in successful ✓","ok"); await enterApp();
-  }catch(e){ setAuthStatus(e.message,"bad"); }
-});
-$("createAccountBtn").addEventListener("click",async()=>{
-  const email=$("authEmail").value.trim(), password=$("authPassword").value;
-  if(!email||!password) return setAuthStatus("Enter email and password.","bad");
-  try{
-    setAuthStatus("Creating account…");
-    const d=await authReq("/auth/v1/signup",{email,password});
-    if(d.access_token){ saveSession(d,email); setAuthStatus("Account created ✓","ok"); await enterApp(); }
-    else setAuthStatus("Account created. Email confirmation may be required.","ok");
-  }catch(e){ setAuthStatus(e.message,"bad"); }
-});
-$("signOutBtn").addEventListener("click",()=>{
-  clearSession(); if(pollTimer)clearInterval(pollTimer); location.reload();
-});
-$("refreshBtn").addEventListener("click",()=>loadAll(true));
-
-async function enterApp(){
-  $("authBox").classList.add("hidden"); $("appBox").classList.remove("hidden");
-  $("loggedInAs").textContent=userEmail || "Signed in";
-  resetItemRows();
-  await loadAll(true);
-  if(pollTimer) clearInterval(pollTimer);
-  pollTimer=setInterval(()=>loadAll(false),15000);
-}
-async function boot(){
-  if(accessToken){
-    let u=await currentUser();
-    if(!u && await refreshSession()) u=await currentUser();
-    if(u){ userEmail=u.email||userEmail; localStorage.setItem("bp_email",userEmail); await enterApp(); return; }
-    clearSession();
-  }
-  $("authBox").classList.remove("hidden");
-}
-function qs(s){ return encodeURIComponent(s); }
-
-async function loadAll(showToast=false){
-  try{
-    $("syncStatus").textContent="Syncing…";
-    const [sites,items,movements,counts]=await Promise.all([
-      rest("sites",{query:"select=*&active=eq.true&order=name.asc"}),
-      rest("items",{query:"select=*&active=eq.true&order=name.asc"}),
-      rest("stock_movements",{query:"select=*&order=occurred_at.desc&limit=1000"}),
-      rest("physical_counts",{query:"select=*&order=counted_at.desc&limit=1000"})
-    ]);
-    state.sites=sites||[]; state.items=items||[]; state.movements=movements||[]; state.counts=counts||[];
-    calculateBalances(); renderAll();
-    $("syncStatus").textContent="Live • last sync "+new Date().toLocaleTimeString()+" • auto-refresh 15s";
-    if(showToast) note("Stock data synced ✓");
-  }catch(e){ $("syncStatus").textContent="Sync error: "+e.message; if(showToast) note(e.message); }
-}
-
-function calculateBalances(){
-  const map=new Map();
-  for(const item of state.items){
-    if(item.default_site_id){
-      const key=item.id+"|"+item.default_site_id;
-      map.set(key,{item_id:item.id,site_id:item.default_site_id,opening:Number(item.opening_quantity||0),received:0,issued:0,item,site:null});
-    }
-  }
-  for(const m of state.movements){
-    const key=m.item_id+"|"+m.site_id;
-    if(!map.has(key)){
-      const item=state.items.find(x=>x.id===m.item_id);
-      if(!item) continue;
-      map.set(key,{item_id:m.item_id,site_id:m.site_id,opening:0,received:0,issued:0,item,site:null});
-    }
-    const b=map.get(key), q=Number(m.quantity||0);
-    if(m.movement_type==="receive"||m.movement_type==="adjustment_in") b.received+=q;
-    if(m.movement_type==="issue"||m.movement_type==="adjustment_out") b.issued+=q;
-  }
-  const latestCount=new Map();
-  for(const c of state.counts){
-    const key=c.item_id+"|"+c.site_id;
-    if(!latestCount.has(key)) latestCount.set(key,c);
-  }
-  state.balances=[...map.values()].map(b=>{
-    b.site=state.sites.find(s=>s.id===b.site_id);
-    b.expected=b.opening+b.received-b.issued;
-    const c=latestCount.get(b.item_id+"|"+b.site_id);
-    b.physical=c?Number(c.physical_quantity):null;
-    b.variance=c?b.physical-b.expected:null;
-    b.low=b.expected<=Number(b.item.minimum_level||0);
-    return b;
-  }).sort((a,b)=>a.item.name.localeCompare(b.item.name));
-}
-
-function fillSelect(id, rows, placeholder){
-  $(id).innerHTML='<option value="">'+placeholder+'</option>'+rows.map(x=>'<option value="'+x.id+'">'+escapeHtml(x.name)+'</option>').join("");
-}
-function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-
-function renderAll(){
-  ["rItem","iItem","cItem"].forEach(id=>fillSelect(id,state.items,"Select item"));
-  ["rSite","iSite","cSite"].forEach(id=>fillSelect(id,state.sites,"Select site"));
-  $("siteList").innerHTML=state.sites.map(s=>'<p><b>'+escapeHtml(s.name)+'</b> <span class="muted">'+escapeHtml(s.code||"")+'</span></p>').join("")||'<p class="muted">No sites.</p>';
-  $("stItems").textContent=state.items.length;
-  $("stLow").textContent=state.balances.filter(b=>b.low).length;
-  const today=new Date().toISOString().slice(0,10);
-  $("stIssued").textContent=state.movements.filter(m=>m.movement_type==="issue"&&m.occurred_at.slice(0,10)===today).reduce((a,m)=>a+Number(m.quantity),0);
-  $("stTx").textContent=state.movements.length;
-  const usage={}; state.movements.filter(m=>m.movement_type==="issue").forEach(m=>usage[m.item_id]=(usage[m.item_id]||0)+Number(m.quantity));
-  const ranked=Object.entries(usage).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  $("mostUsed").innerHTML=ranked.length?ranked.map(([id,q],i)=>'<div class="row"><span>'+(i+1)+'. '+escapeHtml(itemName(id))+'</span><b>'+q+'</b></div>').join(""):'<p class="muted">No issued stock yet.</p>';
-  const lows=state.balances.filter(b=>b.low);
-  $("attention").innerHTML=lows.length?lows.slice(0,12).map(b=>'<div class="row"><span>'+escapeHtml(b.item.name)+' • '+escapeHtml(siteName(b.site_id))+'</span><span class="pill low">'+fmt(b.expected)+' '+escapeHtml(b.item.unit)+'</span></div>').join(""):'<p class="muted">Nothing needs attention.</p>';
-  renderInventory(); renderHistory(); updateIssueBalance(); updateCountExpected();
-}
-function itemName(id){return state.items.find(x=>x.id===id)?.name||"Unknown item"}
-function siteName(id){return state.sites.find(x=>x.id===id)?.name||"Unknown site"}
+async function loadAll(showToast=false){try{$("syncStatus").textContent="Syncing…";const [sites,items,movs,counts,opens]=await Promise.all([rest("sites",{query:"select=*&active=eq.true&order=name.asc"}),rest("items",{query:"select=*&active=eq.true&order=created_at.asc"}),rest("stock_movements",{query:"select=*&order=occurred_at.desc&limit=1500"}),rest("physical_counts",{query:"select=*&order=counted_at.desc&limit=1000"}),rest("opening_stock",{query:"select=*&order=as_of_date.desc&limit=1500"})]);state={sites:sites||[],items:items||[],movements:movs||[],counts:counts||[],openings:opens||[],balances:[]};calculateBalances();renderAll();$("syncStatus").textContent="Live • "+new Date().toLocaleTimeString()+" • auto-refresh 15s";if(showToast)note("Synced ✓")}catch(e){$("syncStatus").textContent="Sync error: "+e.message;if(showToast)note(e.message)}}
+function calculateBalances(){const map=new Map();function get(itemId,siteId){const k=itemId+"|"+siteId;if(!map.has(k)){const item=state.items.find(x=>x.id===itemId);if(!item)return null;map.set(k,{item_id:itemId,site_id:siteId,item,opening:0,received:0,issued:0})}return map.get(k)}
+for(const item of state.items){if(item.default_site_id&&Number(item.opening_quantity||0)>0){const b=get(item.id,item.default_site_id);if(b)b.opening+=Number(item.opening_quantity)}}
+for(const o of state.openings){const b=get(o.item_id,o.site_id);if(b)b.opening+=Number(o.quantity||0)}
+for(const m of state.movements){const b=get(m.item_id,m.site_id);if(!b)continue;const q=Number(m.quantity||0);if(m.movement_type==="receive"||m.movement_type==="adjustment_in")b.received+=q;if(m.movement_type==="issue"||m.movement_type==="adjustment_out")b.issued+=q}
+const latest=new Map();for(const c of state.counts){const k=c.item_id+"|"+c.site_id;if(!latest.has(k))latest.set(k,c)}
+state.balances=[...map.values()].map(b=>{b.expected=b.opening+b.received-b.issued;const c=latest.get(b.item_id+"|"+b.site_id);b.physical=c?Number(c.physical_quantity):null;b.variance=c?b.physical-b.expected:null;b.low=b.expected<=Number(b.item.minimum_level||0);return b})}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function fmt(n){return Number.isInteger(Number(n))?String(Number(n)):Number(n).toFixed(2)}
+function itemPrimary(it){const map={en:it.name_en,fr:it.name_fr,zh:it.name_zh,ln:it.name_ln};return map[currentLang]||it.name_en||it.name_fr||it.name_zh||it.name_ln||it.name||"Unnamed"}
+function itemAlt(it){return [it.name_en,it.name_fr,it.name_zh,it.name_ln].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i&&v!==itemPrimary(it)).join(" · ")}
+function machinePrimary(it){const map={en:it.machine_name_en,fr:it.machine_name_fr,zh:it.machine_name_zh,ln:it.machine_name_ln};return map[currentLang]||it.machine_name_en||it.machine_name_fr||it.machine_name_zh||it.machine_name_ln||""}
+function siteName(id){return state.sites.find(s=>s.id===id)?.name||"Unknown"}
+function itemName(id){const it=state.items.find(x=>x.id===id);return it?itemPrimary(it):"Unknown"}
+function filteredBalances(){return currentSite==="all"?state.balances:state.balances.filter(b=>b.site_id===currentSite)}
+function filteredMovements(){return currentSite==="all"?state.movements:state.movements.filter(m=>m.site_id===currentSite)}
+function fillSelect(id,rows,placeholder){$(id).innerHTML='<option value="">'+placeholder+'</option>'+rows.map(x=>'<option value="'+x.id+'">'+esc(itemPrimary(x)||x.name)+'</option>').join("")}
+function fillSite(id,placeholder){$(id).innerHTML='<option value="">'+placeholder+'</option>'+state.sites.map(x=>'<option value="'+x.id+'">'+esc(x.name)+'</option>').join("")}
+function renderAll(){if(!$("appBox")||$("appBox").classList.contains("hidden"))return;
+const gs=$("globalSiteFilter");gs.innerHTML='<option value="all">All Sites</option>'+state.sites.map(s=>'<option value="'+s.id+'">'+esc(s.name)+'</option>').join("");if(![...gs.options].some(o=>o.value===currentSite))currentSite="all";gs.value=currentSite;
+["oItem","rItem","iItem","cItem"].forEach(id=>fillSelect(id,state.items,"Select item"));["oSite","rSite","iSite","cSite"].forEach(id=>fillSite(id,"Select site"));
+$("siteList").innerHTML=state.sites.map(s=>'<p><b>'+esc(s.name)+'</b> <span class="muted">'+esc(s.code||"")+'</span></p>').join("");
+const bals=filteredBalances(),movs=filteredMovements();$("stItems").textContent=new Set(bals.map(b=>b.item_id)).size;$("stLow").textContent=bals.filter(b=>b.low).length;const today=new Date().toISOString().slice(0,10);$("stIssued").textContent=movs.filter(m=>m.movement_type==="issue"&&m.occurred_at.slice(0,10)===today).reduce((a,m)=>a+Number(m.quantity),0);$("stTx").textContent=movs.length;
+const usage={};movs.filter(m=>m.movement_type==="issue").forEach(m=>usage[m.item_id]=(usage[m.item_id]||0)+Number(m.quantity));$("mostUsed").innerHTML=Object.entries(usage).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([id,q],i)=>'<div class="row"><span>'+(i+1)+'. '+esc(itemName(id))+'</span><b>'+fmt(q)+'</b></div>').join("")||'<p class="muted">—</p>';
+$("attention").innerHTML=bals.filter(b=>b.low).slice(0,12).map(b=>'<div class="row"><span>'+esc(itemPrimary(b.item))+' • '+esc(siteName(b.site_id))+'</span><span class="pill low">'+fmt(b.expected)+' '+esc(b.item.unit)+'</span></div>').join("")||'<p class="muted">—</p>';
+renderInventory();renderHistory();updateIssueBalance();updateCountExpected()}
+function renderInventory(){const q=($("invSearch").value||"").toLowerCase();const rows=filteredBalances().filter(b=>{const it=b.item;return [it.name,it.name_en,it.name_fr,it.name_zh,it.name_ln,it.item_code,it.part_number,it.machine_name_en,it.machine_name_fr,it.machine_name_zh,it.machine_name_ln,siteName(b.site_id)].join(" ").toLowerCase().includes(q)});$("invBody").innerHTML=rows.map(b=>{const it=b.item,alt=itemAlt(it),mach=machinePrimary(it),photo=it.photo_url?'<img class="photo-preview" src="'+esc(it.photo_url)+'">':"";return '<tr><td><div class="names"><b>'+esc(itemPrimary(it))+'</b>'+(alt?'<div class="alt">'+esc(alt)+'</div>':"")+(it.item_code?'<div class="alt">Code: '+esc(it.item_code)+'</div>':"")+(it.part_number?'<div class="alt">Part: '+esc(it.part_number)+'</div>':"")+(mach?'<div class="machine">Machine: '+esc(mach)+'</div>':"")+photo+'</div></td><td>'+esc(siteName(b.site_id))+'</td><td><b>'+fmt(b.expected)+' '+esc(it.unit)+'</b></td><td>'+fmt(b.received)+'</td><td>'+fmt(b.issued)+'</td><td>'+(b.physical===null?"—":fmt(b.physical))+'</td><td>'+(b.variance===null?"—":fmt(b.variance))+'</td><td><span class="pill '+(b.low?"low":"good")+'">'+(b.low?"LOW":"OK")+'</span></td></tr>'}).join("")||'<tr><td colspan="8" class="muted">No stock.</td></tr>'}
+$("invSearch").oninput=renderInventory;
+function renderHistory(){const f=$("histFilter").value;let arr=[];if(f==="all"||f==="opening")arr.push(...state.openings.filter(o=>currentSite==="all"||o.site_id===currentSite).map(o=>({kind:"OPENING",date:o.as_of_date,item_id:o.item_id,site_id:o.site_id,quantity:o.quantity,who:o.recorded_by||"",notes:o.notes||""})));if(f==="all"||f==="receive"||f==="issue")arr.push(...state.movements.filter(m=>(currentSite==="all"||m.site_id===currentSite)&&(f==="all"||m.movement_type===f)).map(m=>({kind:m.movement_type.toUpperCase(),date:m.occurred_at,item_id:m.item_id,site_id:m.site_id,quantity:m.quantity,who:m.received_by||m.taken_by||m.issued_by||"",notes:m.purpose||m.notes||""})));arr.sort((a,b)=>new Date(b.date)-new Date(a.date));$("historyList").innerHTML=arr.slice(0,300).map(x=>'<div class="card"><div class="row"><b>'+esc(itemName(x.item_id))+'</b><span class="pill">'+esc(x.kind)+'</span></div><div>'+fmt(x.quantity)+' • '+esc(siteName(x.site_id))+'</div><div class="small muted">'+new Date(x.date).toLocaleString()+'</div><div class="small muted">'+esc(x.who)+(x.notes?" • "+esc(x.notes):"")+'</div></div>').join("")||'<p class="muted">—</p>'}
+$("histFilter").onchange=renderHistory;
 
-function renderInventory(){
-  const q=($("invSearch").value||"").toLowerCase();
-  const rows=state.balances.filter(b=>[b.item.name,siteName(b.site_id),b.item.storage_location||""].join(" ").toLowerCase().includes(q));
-  $("invBody").innerHTML=rows.map(b=>{
-    const photo=b.item.photo_url?'<br><img class="photo-preview" src="'+escapeHtml(b.item.photo_url)+'">':"";
-    return '<tr><td><b>'+escapeHtml(b.item.name)+'</b><br><span class="muted">'+escapeHtml(b.item.storage_location||"")+'</span>'+photo+'</td>'+
-      '<td>'+escapeHtml(siteName(b.site_id))+'</td><td><b>'+fmt(b.expected)+' '+escapeHtml(b.item.unit)+'</b></td>'+
-      '<td>'+fmt(b.received)+'</td><td>'+fmt(b.issued)+'</td><td>'+(b.physical===null?"—":fmt(b.physical))+'</td>'+
-      '<td>'+(b.variance===null?"—":fmt(b.variance))+'</td><td><span class="pill '+(b.low?"low":"good")+'">'+(b.low?"LOW":"OK")+'</span></td></tr>';
-  }).join("")||'<tr><td colspan="8" class="muted">No stock items yet.</td></tr>';
-}
-$("invSearch").addEventListener("input",renderInventory);
-
-function renderHistory(){
-  const f=$("histFilter").value;
-  const rows=state.movements.filter(m=>f==="all"||m.movement_type===f).slice(0,250);
-  $("historyList").innerHTML=rows.length?rows.map(m=>'<div class="card"><div class="row"><b>'+escapeHtml(itemName(m.item_id))+'</b><span class="pill">'+escapeHtml(m.movement_type.toUpperCase())+'</span></div>'+
-  '<div>'+fmt(m.quantity)+' • '+escapeHtml(siteName(m.site_id))+'</div><div class="small muted">'+new Date(m.occurred_at).toLocaleString()+'</div>'+
-  '<div class="small muted">'+escapeHtml(m.received_by||m.taken_by||m.issued_by||"")+(m.purpose?" • "+escapeHtml(m.purpose):"")+'</div></div>').join(""):'<p class="muted">No transactions yet.</p>';
-}
-$("histFilter").addEventListener("change",renderHistory);
-
-let itemNo=0;
-function resetItemRows(){ itemNo=0; $("itemRows").innerHTML=""; addItemRow(); }
-function siteOptions(){return '<option value="">Select site</option>'+state.sites.map(s=>'<option value="'+s.id+'">'+escapeHtml(s.name)+'</option>').join("")}
-function addItemRow(){
-  itemNo++;
-  const d=document.createElement("div"); d.className="item-entry";
-  d.innerHTML='<h3>Item '+itemNo+'</h3>'+
-  '<label>Item name</label><input class="n" placeholder="Enter item name">'+
-  '<div class="grid3"><div><label>Opening quantity</label><input class="q" type="number" min="0" step="0.01" value="0"></div>'+
-  '<div><label>Unit</label><input class="u" value="pieces"></div><div><label>Category</label><input class="cat" placeholder="Optional"></div></div>'+
-  '<div class="grid"><div><label>Site</label><select class="s">'+siteOptions()+'</select></div>'+
-  '<div><label>Stock location</label><input class="loc" placeholder="Store / shelf / area"></div></div>'+
-  '<label>Minimum stock level</label><input class="min" type="number" min="0" step="0.01" value="0">'+
-  '<label>Notes</label><textarea class="notes" rows="2"></textarea>'+
-  '<label>Item photo (optional — last field)</label><input class="photo" type="file" accept="image/*">';
-  $("itemRows").appendChild(d);
-  const n=d.querySelector(".n");
-  n.addEventListener("input",()=>{ const cards=[...document.querySelectorAll(".item-entry")]; if(cards[cards.length-1]===d&&n.value.trim()) addItemRow(); });
-}
-
-async function uploadPhoto(file){
-  if(!file) return null;
-  const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
-  const path="items/"+Date.now()+"-"+Math.random().toString(36).slice(2)+"-"+safe;
-  const r=await authedFetch(BASE+"/storage/v1/object/stock-photos/"+path,{method:"POST",headers:{"Content-Type":file.type||"application/octet-stream","x-upsert":"false"},body:file});
-  const text=await r.text();
-  if(!r.ok) throw new Error("Photo upload failed: "+text);
-  return BASE+"/storage/v1/object/public/stock-photos/"+path;
-}
-
-$("itemsForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const cards=[...document.querySelectorAll(".item-entry")].filter(d=>d.querySelector(".n").value.trim());
-  if(!cards.length) return note("Enter at least one item.");
-  for(const d of cards){
-    const name=d.querySelector(".n").value.trim();
-    const site=d.querySelector(".s").value;
-    const unit=d.querySelector(".u").value.trim();
-    if(!name) return note("Every entered item needs an item name.");
-    if(!site) return note("Select a site for "+name+".");
-    if(!unit) return note("Enter a unit for "+name+".");
-  }
-  const btn=e.submitter; if(btn)btn.disabled=true;
-  try{
-    for(const d of cards){
-      let photoUrl=null;
-      const file=d.querySelector(".photo").files[0];
-      if(file){ try{photoUrl=await uploadPhoto(file);}catch(err){note(err.message+" — saving item without photo.");} }
-      const rec={
-        name:d.querySelector(".n").value.trim(),
-        category:d.querySelector(".cat").value.trim()||null,
-        opening_quantity:Number(d.querySelector(".q").value||0),
-        unit:d.querySelector(".u").value.trim()||"pieces",
-        default_site_id:d.querySelector(".s").value,
-        storage_location:d.querySelector(".loc").value.trim()||null,
-        minimum_level:Number(d.querySelector(".min").value||0),
-        notes:d.querySelector(".notes").value.trim()||null,
-        photo_url:photoUrl
-      };
-      await rest("items",{method:"POST",body:rec,prefer:"return=representation"});
-    }
-    note("Items saved ✓"); await loadAll(false); resetItemRows(); showTab("inventory");
-  }catch(err){note(err.message);} finally{if(btn)btn.disabled=false;}
-});
-
-$("receiveForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  try{
-    await rest("stock_movements",{method:"POST",prefer:"return=representation",body:{
-      item_id:$("rItem").value,site_id:$("rSite").value,movement_type:"receive",quantity:Number($("rQty").value),
-      received_by:$("rBy").value.trim(),source:$("rSource").value.trim()||null,reference:$("rRef").value.trim()||null,notes:$("rNotes").value.trim()||null
-    }});
-    e.target.reset(); note("Stock received ✓"); await loadAll(false); showTab("inventory");
-  }catch(err){note(err.message);}
-});
-
-function getBalance(itemId,siteId){return state.balances.find(b=>b.item_id===itemId&&b.site_id===siteId)}
-function updateIssueBalance(){
-  const b=getBalance($("iItem").value,$("iSite").value);
-  $("issueBalance").textContent=b?"Stock remaining: "+fmt(b.expected)+" "+b.item.unit:"No stock balance found for this item/site.";
-  $("issueBalance").className="status"+(b&&b.expected>0?" ok":"");
-}
-$("iItem").addEventListener("change",updateIssueBalance); $("iSite").addEventListener("change",updateIssueBalance);
-
-$("issueForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const qty=Number($("iQty").value), b=getBalance($("iItem").value,$("iSite").value);
-  if(!b) return note("No stock balance exists for this item/site.");
-  if(qty>b.expected) return note("Cannot issue "+qty+". Only "+fmt(b.expected)+" remains.");
-  try{
-    await rest("stock_movements",{method:"POST",prefer:"return=representation",body:{
-      item_id:$("iItem").value,site_id:$("iSite").value,movement_type:"issue",quantity:qty,
-      issued_by:$("iBy").value.trim(),taken_by:$("iTaken").value.trim(),purpose:$("iPurpose").value.trim()||null,notes:$("iNotes").value.trim()||null
-    }});
-    e.target.reset(); note("Stock issued ✓"); await loadAll(false); showTab("inventory");
-  }catch(err){note(err.message);}
-});
-
-function updateCountExpected(){
-  const b=getBalance($("cItem").value,$("cSite").value);
-  $("countExpected").textContent=b?"Expected stock: "+fmt(b.expected)+" "+b.item.unit:"No expected balance found for this item/site.";
-  $("countExpected").className="status"+(b?" ok":"");
-}
-$("cItem").addEventListener("change",updateCountExpected); $("cSite").addEventListener("change",updateCountExpected);
-
-$("countForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  try{
-    await rest("physical_counts",{method:"POST",prefer:"return=representation",body:{
-      item_id:$("cItem").value,site_id:$("cSite").value,physical_quantity:Number($("cQty").value),
-      counted_by:$("cBy").value.trim(),notes:$("cNotes").value.trim()||null
-    }});
-    e.target.reset(); note("Physical count saved ✓"); await loadAll(false); showTab("inventory");
-  }catch(err){note(err.message);}
-});
-
-$("siteForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  try{
-    await rest("sites",{method:"POST",prefer:"return=representation",body:{name:$("siteName").value.trim(),code:$("siteCode").value.trim()||null}});
-    e.target.reset(); note("Site added ✓"); await loadAll(false); resetItemRows();
-  }catch(err){note(err.message);}
-});
-
+let itemNo=0;function resetItemRows(){itemNo=0;$("itemRows").innerHTML="";addItemRow()}
+function addItemRow(){itemNo++;const d=document.createElement("div");d.className="item-entry";d.innerHTML='<h3>Item '+itemNo+'</h3><div class="grid"><div><label>English name</label><input class="en"></div><div><label>Nom français</label><input class="fr"></div><div><label>中文名称</label><input class="zh"></div><div><label>Lingala name</label><input class="ln"></div></div><label>Unit *</label><input class="unit" value="pieces"><details><summary>More details (optional)</summary><div class="grid"><div><label>Item code</label><input class="code"></div><div><label>Category</label><input class="cat"></div><div><label>Part number / model</label><input class="part"></div><div><label>Manufacturer / brand</label><input class="maker"></div></div><h4>Machine / equipment names</h4><div class="grid"><div><label>English</label><input class="men"></div><div><label>Français</label><input class="mfr"></div><div><label>中文</label><input class="mzh"></div><div><label>Lingala</label><input class="mln"></div></div><label>Notes</label><textarea class="notes"></textarea><label>Photo (optional — last field)</label><input class="photo" type="file" accept="image/*"></details>';$("itemRows").appendChild(d);const names=[...d.querySelectorAll(".en,.fr,.zh,.ln")];names.forEach(inp=>inp.addEventListener("input",()=>{const cards=[...document.querySelectorAll(".item-entry")],has=names.some(x=>x.value.trim());if(cards[cards.length-1]===d&&has)addItemRow()}))}
+async function uploadPhoto(file){if(!file)return null;const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"_"),path="items/"+Date.now()+"-"+Math.random().toString(36).slice(2)+"-"+safe;const r=await authedFetch(BASE+"/storage/v1/object/stock-photos/"+path,{method:"POST",headers:{"Content-Type":file.type||"application/octet-stream","x-upsert":"false"},body:file});if(!r.ok)throw new Error("Photo upload failed");return BASE+"/storage/v1/object/public/stock-photos/"+path}
+$("itemsForm").onsubmit=async e=>{e.preventDefault();const cards=[...document.querySelectorAll(".item-entry")].filter(d=>[".en",".fr",".zh",".ln"].some(s=>d.querySelector(s).value.trim()));if(!cards.length)return note("Enter at least one item name.");for(const d of cards)if(!d.querySelector(".unit").value.trim())return note("Unit is required.");const btn=e.submitter;if(btn)btn.disabled=true;try{for(const d of cards){const names={en:d.querySelector(".en").value.trim(),fr:d.querySelector(".fr").value.trim(),zh:d.querySelector(".zh").value.trim(),ln:d.querySelector(".ln").value.trim()},name=names.en||names.fr||names.zh||names.ln;let photo=null;const f=d.querySelector(".photo").files[0];if(f)try{photo=await uploadPhoto(f)}catch(err){note(err.message+" — saving without photo")};await rest("items",{method:"POST",prefer:"return=representation",body:{name,name_en:names.en||null,name_fr:names.fr||null,name_zh:names.zh||null,name_ln:names.ln||null,unit:d.querySelector(".unit").value.trim(),item_code:d.querySelector(".code").value.trim()||null,category:d.querySelector(".cat").value.trim()||null,part_number:d.querySelector(".part").value.trim()||null,manufacturer:d.querySelector(".maker").value.trim()||null,machine_name_en:d.querySelector(".men").value.trim()||null,machine_name_fr:d.querySelector(".mfr").value.trim()||null,machine_name_zh:d.querySelector(".mzh").value.trim()||null,machine_name_ln:d.querySelector(".mln").value.trim()||null,notes:d.querySelector(".notes").value.trim()||null,photo_url:photo,opening_quantity:0,default_site_id:null}})}note("Items saved ✓");await loadAll(false);resetItemRows()}catch(err){note(err.message)}finally{if(btn)btn.disabled=false}};
+$("openingForm").onsubmit=async e=>{e.preventDefault();try{await rest("opening_stock",{method:"POST",prefer:"return=representation",body:{item_id:$("oItem").value,site_id:$("oSite").value,quantity:Number($("oQty").value),as_of_date:$("oDate").value,recorded_by:$("oBy").value.trim()||null,notes:$("oNotes").value.trim()||null}});e.target.reset();setDefaultDates();note("Opening stock saved ✓");await loadAll(false);showTab("inventory")}catch(err){note(err.message)}};
+function isoLocal(id){return $(id).value?new Date($(id).value).toISOString():new Date().toISOString()}
+$("receiveForm").onsubmit=async e=>{e.preventDefault();try{await rest("stock_movements",{method:"POST",prefer:"return=representation",body:{item_id:$("rItem").value,site_id:$("rSite").value,movement_type:"receive",quantity:Number($("rQty").value),received_by:$("rBy").value.trim(),source:$("rSource").value.trim()||null,reference:$("rRef").value.trim()||null,notes:$("rNotes").value.trim()||null,occurred_at:isoLocal("rDate")}});e.target.reset();setDefaultDates();note("Received ✓");await loadAll(false);showTab("inventory")}catch(err){note(err.message)}};
+function getBalance(i,s){return state.balances.find(b=>b.item_id===i&&b.site_id===s)}function updateIssueBalance(){const b=getBalance($("iItem").value,$("iSite").value);$("issueBalance").textContent=b?"Stock remaining: "+fmt(b.expected)+" "+b.item.unit:"No stock balance found."}function updateCountExpected(){const b=getBalance($("cItem").value,$("cSite").value);$("countExpected").textContent=b?"Expected: "+fmt(b.expected)+" "+b.item.unit:"No expected balance found."}
+$("iItem").onchange=$("iSite").onchange=updateIssueBalance;$("cItem").onchange=$("cSite").onchange=updateCountExpected;
+$("issueForm").onsubmit=async e=>{e.preventDefault();const qty=Number($("iQty").value),b=getBalance($("iItem").value,$("iSite").value);if(!b)return note("No stock balance.");if(qty>b.expected)return note("Cannot issue more than remaining stock.");try{await rest("stock_movements",{method:"POST",prefer:"return=representation",body:{item_id:$("iItem").value,site_id:$("iSite").value,movement_type:"issue",quantity:qty,issued_by:$("iBy").value.trim(),taken_by:$("iTaken").value.trim(),purpose:$("iPurpose").value.trim()||null,notes:$("iNotes").value.trim()||null,occurred_at:isoLocal("iDate")}});e.target.reset();setDefaultDates();note("Issued ✓");await loadAll(false);showTab("inventory")}catch(err){note(err.message)}};
+$("countForm").onsubmit=async e=>{e.preventDefault();try{await rest("physical_counts",{method:"POST",prefer:"return=representation",body:{item_id:$("cItem").value,site_id:$("cSite").value,physical_quantity:Number($("cQty").value),counted_by:$("cBy").value.trim(),notes:$("cNotes").value.trim()||null,counted_at:isoLocal("cDate")}});e.target.reset();setDefaultDates();note("Count saved ✓");await loadAll(false);showTab("inventory")}catch(err){note(err.message)}};
+$("siteForm").onsubmit=async e=>{e.preventDefault();try{await rest("sites",{method:"POST",prefer:"return=representation",body:{name:$("siteName").value.trim(),code:$("siteCode").value.trim()||null}});e.target.reset();note("Site added ✓");await loadAll(false)}catch(err){note(err.message)}};
 boot();
 </script>
 </body></html>
